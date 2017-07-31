@@ -1,0 +1,11 @@
+body {
+	min-width:300px;
+}
+
+#post-login {
+	margin-bottom:5%;
+}
+
+#new-credentials, #master-password {
+	display : hidden;
+}
