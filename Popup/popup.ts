@@ -1,4 +1,4 @@
-/// <reference path="../include/index.d.ts"/>
+/// <reference path="../Include/index.d.ts"/>
 
 class ClientMessenger {
   m_Port:chrome.runtime.Port;
@@ -14,7 +14,6 @@ class ClientMessenger {
       if (msg.DomainExists)
       {
         let val:boolean = msg.DomainExists.val;
-        console.log("Domainexists value:"+msg.DomainExists.val);
         self.m_Manager.SetLayout(val);
       }
     });
@@ -34,12 +33,11 @@ class PopupManager {
     let self = this;
     window.addEventListener("load", function() {
       document.getElementById("post-login").addEventListener("click", function() {
-      // casting to subtype HTMLInputElement to uptain value property.
         let username = (<HTMLInputElement>document.getElementById("username-input")).value;
         let password = (<HTMLInputElement>document.getElementById("password-input")).value;
 
         if (username && password)
-          self.m_Messenger.PostMessage({NewUserinfo: {Username: username, Password: password}});
+            self.m_Messenger.PostMessage({NewUserInfo: {Username: username, Password: password}});
       });
       document.getElementById("post-master-password").addEventListener("click", function() {
         let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;

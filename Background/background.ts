@@ -1,5 +1,5 @@
 
-/// <reference path="../include/index.d.ts"/>
+/// <reference path="../Include/index.d.ts"/>
 class ServerMessenger {
 	private m_Port :object;
 	private m_Domain :string;
@@ -18,14 +18,16 @@ class ServerMessenger {
 
 			if (port.name == "filler")
 			{
+				console.log("filler connected");
 				self.InitFillerListener(port);
 			}
-			else if (port.name == "popup"
-)			{
+			else if (port.name == "popup")			
+			{
+				console.log("popup connected");
 				let doesExist = false;
 				if (self.m_Domain)
 				{
-					let dataset = self.m_Model.GetUserData(this.m_Domain);
+					let dataset = self.m_Model.GetUserData(self.m_Domain);
 					if (dataset)
 						doesExist = true;				
 				}
@@ -47,9 +49,10 @@ class ServerMessenger {
 	InitPopupListener(port:chrome.runtime.Port):void {
 		var self = this;
 		port.onMessage.addListener(function(msg:any) {
-			if (msg.NewUserInfo && this.m_Domain)
+			console.log("Popup msg:"+ msg.NewUserInfo);
+			if (msg.NewUserInfo && self.m_Domain)
 			{
-				let user = msg.Userinfo;
+				let user = msg.NewUserInfo;
 				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
 			}
 			else if (msg.MasterPassword)
@@ -75,15 +78,15 @@ class ServerMessenger {
 class Model {
 	constructor(){}
 	SaveUserData(domain:string, username:string, password:string):void {
-		let credentials = {"Username": username, "Password":password};
-		chrome.storage.local.set({domain : credentials}, function() {
+		let credentials = {"Username": username, "Password": password};
+		chrome.storage.local.set({[domain] : credentials}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 				console.log("Last error" + lasterror.message);
-
 		});
 	}
 	GetUserData(domain:string): any {
+		console.log("Trying to get data for:" + domain);
 		chrome.storage.local.get(domain, function(dataset) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
@@ -91,6 +94,12 @@ class Model {
 				console.log("Error retrieving value from storage" + lasterror.message);
 				return null;
 			}
+			else if (typeof dataset.links == 'undefined') 
+			{
+				console.log("record does not exist");
+				return null;
+			}
+			console.log("Found record. Returning");
 			return dataset;
 		});
 	}

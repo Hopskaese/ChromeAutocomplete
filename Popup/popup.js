@@ -1,4 +1,4 @@
-/// <reference path="../include/index.d.ts"/>
+/// <reference path="../Include/index.d.ts"/>
 var ClientMessenger = (function () {
     function ClientMessenger(manager) {
         this.m_Manager = manager;
@@ -28,11 +28,10 @@ var PopupManager = (function () {
         var self = this;
         window.addEventListener("load", function () {
             document.getElementById("post-login").addEventListener("click", function () {
-                // casting to subtype HTMLInputElement to uptain value property.
                 var username = document.getElementById("username-input").value;
                 var password = document.getElementById("password-input").value;
                 if (username && password)
-                    self.m_Messenger.PostMessage({ NewUserinfo: { Username: username, Password: password } });
+                    self.m_Messenger.PostMessage({ NewUserInfo: { Username: username, Password: password } });
             });
             document.getElementById("post-master-password").addEventListener("click", function () {
                 var password = document.getElementById("master-password-input").value;

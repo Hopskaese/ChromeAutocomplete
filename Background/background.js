@@ -1,4 +1,4 @@
-/// <reference path="../include/index.d.ts"/>
+/// <reference path="../Include/index.d.ts"/>
 var ServerMessenger = (function () {
     function ServerMessenger() {
         this.m_Model = new Model();
@@ -10,12 +10,14 @@ var ServerMessenger = (function () {
         chrome.runtime.onConnect.addListener(function (port) {
             self.m_Port[port.name] = port;
             if (port.name == "filler") {
+                console.log("filler connected");
                 self.InitFillerListener(port);
             }
             else if (port.name == "popup") {
+                console.log("popup connected");
                 var doesExist = false;
                 if (self.m_Domain) {
-                    var dataset = self.m_Model.GetUserData(this.m_Domain);
+                    var dataset = self.m_Model.GetUserData(self.m_Domain);
                     if (dataset)
                         doesExist = true;
                 }
@@ -35,9 +37,10 @@ var ServerMessenger = (function () {
     ServerMessenger.prototype.InitPopupListener = function (port) {
         var self = this;
         port.onMessage.addListener(function (msg) {
-            if (msg.NewUserInfo && this.m_Domain) {
-                var user = msg.Userinfo;
-                self.m_Model.SaveUserData(this.m_Domain, user.Username, user.Password);
+            console.log("Popup msg:" + msg.NewUserInfo);
+            if (msg.NewUserInfo && self.m_Domain) {
+                var user = msg.NewUserInfo;
+                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
             }
             else if (msg.MasterPassword) {
                 /*
@@ -62,19 +65,26 @@ var Model = (function () {
     }
     Model.prototype.SaveUserData = function (domain, username, password) {
         var credentials = { "Username": username, "Password": password };
-        chrome.storage.local.set({ domain: credentials }, function () {
+        chrome.storage.local.set((_a = {}, _a[domain] = credentials, _a), function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror)
                 console.log("Last error" + lasterror.message);
         });
+        var _a;
     };
     Model.prototype.GetUserData = function (domain) {
+        console.log("Trying to get data for:" + domain);
         chrome.storage.local.get(domain, function (dataset) {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
                 return null;
             }
+            else if (typeof dataset.links == 'undefined') {
+                console.log("record does not exist");
+                return null;
+            }
+            console.log("Found record. Returning");
             return dataset;
         });
     };
