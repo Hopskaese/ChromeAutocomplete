@@ -1,47 +1,50 @@
-var ClientMessenger = {
-  m_Port : null,
-
-  InitListeners: function() {
-    m_Port = chrome.runtime.connect({name:"popup"});
-    m_Port.onMessage.addListener(function(msg, sender) {
-      if (msg.DomainExists)
-      {
-        let val = msg.DomainExists.val;
-        if (val)
-        {
-          $('#master-password').show();
-          $('#new-credentials').hide();
-        }
-        else
-        {
-          $('#new-credentials').show();
-          $('#master-password').hide();
-        }
-      }   
-    });
-  },
-  PostMessage: function(json) {
-    m_Port.postMessage(json);
-  }
-}
-
-var PopupManager = {
-  InitListeners: function() {  
-    $("#post-login").on("click", function() {
-      var username = $("#username-input").val();
-      var password =  $("#password-input").val();
-      if (username && password)
-        ClientMessenger.PostMessage({NewUserinfo: {Username: username, Password: password}}); 
-    });
-    $("#post-master-password").on("click", function() {
-      var password = $("#master-password-input").val();
-      if (password)
-          ClientMessenger.PostMessage({MasterPassword: password});
-    });
-  }
-}
-
-$(document).ready(function() {
-    PopupManager.InitListeners();
-    ClientMessenger.InitListeners();
-});
+/// <reference path="../include/index.d.ts"/>
+var ClientMessenger = (function () {
+    function ClientMessenger(manager) {
+        this.m_Manager = manager;
+        this.InitListeners();
+    }
+    ClientMessenger.prototype.InitListeners = function () {
+        this.m_Port = chrome.runtime.connect({ name: "popup" });
+        var self = this;
+        this.m_Port.onMessage.addListener(function (msg, sender) {
+            if (msg.DomainExists) {
+                var val = msg.DomainExists.val;
+                self.m_Manager.SetLayout(val);
+            }
+        });
+    };
+    ClientMessenger.prototype.PostMessage = function (input) {
+        this.m_Port.postMessage(input);
+    };
+    return ClientMessenger;
+}());
+var PopupManager = (function () {
+    function PopupManager() {
+        this.m_Messenger = new ClientMessenger(this);
+        this.InitListener();
+    }
+    PopupManager.prototype.InitListener = function () {
+        var self = this;
+        window.addEventListener("load", function () {
+            document.getElementById("post-login").addEventListener("click", function () {
+                // casting to subtype HTMLInputElement to uptain value property.
+                var username = document.getElementById("username-input").value;
+                var password = document.getElementById("password-input").value;
+                if (username && password)
+                    self.m_Messenger.PostMessage({ NewUserinfo: { Username: username, Password: password } });
+            });
+            document.getElementById("post-master-password").addEventListener("click", function () {
+                var password = document.getElementById("master-password-input").value;
+                if (password)
+                    self.m_Messenger.PostMessage({ MasterPassword: password });
+            });
+        });
+    };
+    PopupManager.prototype.SetLayout = function (doesExist) {
+        document.getElementById("master-password").style.visibility = doesExist ? "visible" : "hidden";
+        document.getElementById("new-credentials").style.visibility = doesExist ? "hidden" : "visible";
+    };
+    return PopupManager;
+}());
+var PopupManger = new PopupManager();
