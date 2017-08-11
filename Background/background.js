@@ -54,12 +54,13 @@ var ServerMessenger = (function () {
                 else
                 {}
                 Implement general error class.
-            */
+                */
             }
         });
     };
     return ServerMessenger;
 }());
+//chrome.storage.local.get(null, function (data) { console.info(data) });
 var Model = (function () {
     function Model() {
     }
@@ -74,7 +75,8 @@ var Model = (function () {
     };
     Model.prototype.GetUserData = function (domain) {
         console.log("Trying to get data for:" + domain);
-        chrome.storage.local.get(domain, function (dataset) {
+        chrome.storage.local.get([domain], function (dataset) {
+            console.info(dataset);
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);

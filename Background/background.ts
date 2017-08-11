@@ -68,13 +68,13 @@ class ServerMessenger {
 				else
 				{}
 				Implement general error class.
-			*/
+				*/
 			}
 		});
 	}
 
 }
-
+//chrome.storage.local.get(null, function (data) { console.info(data) });
 class Model {
 	constructor(){}
 	SaveUserData(domain:string, username:string, password:string):void {
@@ -87,7 +87,7 @@ class Model {
 	}
 	GetUserData(domain:string): any {
 		console.log("Trying to get data for:" + domain);
-		chrome.storage.local.get(domain, function(dataset) {
+		chrome.storage.local.get([domain], function(dataset) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
