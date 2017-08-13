@@ -1,7 +1,9 @@
 /// <reference path="../Include/index.d.ts"/>
+/// <reference path="cryptor.ts"/>
 var ServerMessenger = (function () {
     function ServerMessenger() {
         this.m_Model = new Model();
+        this.m_Cryptor = new Cryptor();
         this.m_Port = {};
         this.InitListeners();
     }
@@ -15,14 +17,16 @@ var ServerMessenger = (function () {
             }
             else if (port.name == "popup") {
                 console.log("popup connected");
-                var doesExist = false;
-                if (self.m_Domain) {
-                    var dataset = self.m_Model.GetUserData(self.m_Domain);
-                    if (dataset)
-                        doesExist = true;
-                }
                 self.InitPopupListener(port);
-                self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist } });
+                var doesExist_1 = false;
+                if (self.m_Domain) {
+                    var dataset = self.m_Model.GetUserData(self.m_Domain, function (dataset) {
+                        console.log("Returned data:" + dataset);
+                        if (dataset)
+                            doesExist_1 = true;
+                        self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist_1 } });
+                    });
+                }
             }
         });
     };
@@ -43,6 +47,9 @@ var ServerMessenger = (function () {
                 self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
             }
             else if (msg.MasterPassword) {
+                console.log("going to encrypt masterpassword" + msg.MasterPassword);
+                self.m_Cryptor.Encrypt("sadasdas", msg.MasterPassword);
+                //self.m_Port["filler"].postMessage({Userdata : self.m_Model.GetCurDataset()})
                 /*
                 Authenticate();
                 let credentials = Model.GetUserData(m_Domain);
@@ -73,22 +80,27 @@ var Model = (function () {
         });
         var _a;
     };
-    Model.prototype.GetUserData = function (domain) {
+    Model.prototype.GetUserData = function (domain, callback) {
+        var self = this;
         console.log("Trying to get data for:" + domain);
         chrome.storage.local.get([domain], function (dataset) {
-            console.info(dataset);
+            console.log(dataset);
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                return null;
+                callback(null);
             }
-            else if (typeof dataset.links == 'undefined') {
+            else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                return null;
+                callback(null);
             }
             console.log("Found record. Returning");
-            return dataset;
+            self.m_CurDataset = dataset;
+            callback(dataset);
         });
+    };
+    Model.prototype.GetCurDataset = function () {
+        return this.m_CurDataset;
     };
     Model.prototype.Authenticate = function (password) {
     };

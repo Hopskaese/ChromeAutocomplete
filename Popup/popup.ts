@@ -13,6 +13,7 @@ class ClientMessenger {
     this.m_Port.onMessage.addListener(function(msg:any, sender:chrome.runtime.Port) {
       if (msg.DomainExists)
       {
+        console.log("Domain exists?:"+ msg.DomainExists.val)
         let val:boolean = msg.DomainExists.val;
         self.m_Manager.SetLayout(val);
       }
@@ -47,8 +48,8 @@ class PopupManager {
     });
   }
   SetLayout(doesExist:boolean):void {
-    document.getElementById("master-password").style.visibility = doesExist ? "visible" : "hidden";
-    document.getElementById("new-credentials").style.visibility = doesExist ? "hidden" : "visible";
+    document.getElementById("master-password").style.display = doesExist ? "block" : "none";
+    document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
   }
 }
 

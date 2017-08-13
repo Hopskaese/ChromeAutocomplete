@@ -9,6 +9,7 @@ var ClientMessenger = (function () {
         var self = this;
         this.m_Port.onMessage.addListener(function (msg, sender) {
             if (msg.DomainExists) {
+                console.log("Domain exists?:" + msg.DomainExists.val);
                 var val = msg.DomainExists.val;
                 self.m_Manager.SetLayout(val);
             }
@@ -41,8 +42,12 @@ var PopupManager = (function () {
         });
     };
     PopupManager.prototype.SetLayout = function (doesExist) {
+        /*
         document.getElementById("master-password").style.visibility = doesExist ? "visible" : "hidden";
         document.getElementById("new-credentials").style.visibility = doesExist ? "hidden" : "visible";
+        */
+        document.getElementById("master-password").style.display = doesExist ? "block" : "none";
+        document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
     };
     return PopupManager;
 }());

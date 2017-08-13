@@ -1,13 +1,17 @@
 
 /// <reference path="../Include/index.d.ts"/>
+/// <reference path="cryptor.ts"/>
+
 class ServerMessenger {
 	private m_Port :object;
 	private m_Domain :string;
 	private m_Model	:Model;
+	private m_Cryptor :Cryptor;
 
 	constructor()
 	{
 		this.m_Model = new Model();
+		this.m_Cryptor = new Cryptor();
 		this.m_Port = {};
 		this.InitListeners();
 	}
@@ -24,15 +28,18 @@ class ServerMessenger {
 			else if (port.name == "popup")			
 			{
 				console.log("popup connected");
+				self.InitPopupListener(port);
 				let doesExist = false;
 				if (self.m_Domain)
 				{
-					let dataset = self.m_Model.GetUserData(self.m_Domain);
-					if (dataset)
-						doesExist = true;				
+					let dataset = self.m_Model.GetUserData(self.m_Domain, function(dataset) {
+						console.log("Returned data:"+dataset);
+						if (dataset)
+							doesExist = true;	
+
+						self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}})
+					});			
 				}
-				self.InitPopupListener(port);
-				self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}})
 			}
 
 		});
@@ -57,6 +64,10 @@ class ServerMessenger {
 			}
 			else if (msg.MasterPassword)
 			{
+				console.log("going to encrypt masterpassword"+ msg.MasterPassword);
+				self.m_Cryptor.Encrypt("sadasdas",msg.MasterPassword);
+
+				//self.m_Port["filler"].postMessage({Userdata : self.m_Model.GetCurDataset()})
 				/*
 				Authenticate();
 				let credentials = Model.GetUserData(m_Domain);
@@ -76,6 +87,7 @@ class ServerMessenger {
 }
 //chrome.storage.local.get(null, function (data) { console.info(data) });
 class Model {
+	private m_CurDataset: object;
 	constructor(){}
 	SaveUserData(domain:string, username:string, password:string):void {
 		let credentials = {"Username": username, "Password": password};
@@ -85,23 +97,29 @@ class Model {
 				console.log("Last error" + lasterror.message);
 		});
 	}
-	GetUserData(domain:string): any {
+	GetUserData(domain:string, callback:(data:object)=>any): void {
+		let self = this;
 		console.log("Trying to get data for:" + domain);
 		chrome.storage.local.get([domain], function(dataset) {
+			console.log(dataset);
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				return null;
+				callback(null);
 			}
-			else if (typeof dataset.links == 'undefined') 
+			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
-				return null;
+				callback(null);
 			}
 			console.log("Found record. Returning");
-			return dataset;
+			self.m_CurDataset = dataset;
+			callback(dataset);
 		});
+	}
+	GetCurDataset(): any {
+		return this.m_CurDataset;
 	}
 	Authenticate(password:string) {
 

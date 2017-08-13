@@ -6,7 +6,7 @@ port.onDisconnect.addListener((p) => {
   }
 });
 */
-/// <reference path="../include/index.d.ts"/>
+/// <reference path="../Include/index.d.ts"/>
 var ClientMessenger = (function () {
     function ClientMessenger() {
         this.m_Filler = new Filler();
@@ -14,15 +14,13 @@ var ClientMessenger = (function () {
         this.InitListeners();
     }
     ClientMessenger.prototype.InitListeners = function () {
+        var self = this;
         this.m_Port = chrome.runtime.connect({ name: "filler" });
-        this.PostMessage({ Domain: document.domain });
         this.m_Port.onMessage.addListener(function (msg, sender) {
-            if (msg.Credentials) {
-                var user = msg.Credentials[0];
-                if (user)
-                    this.m_Filler.FillInInfo(user.username, user.password);
-            }
+            if (msg.Userdata)
+                self.m_Filler.FillInInfo(msg.Userdata[document.domain].Username, msg.Userdata[document.domain].Password);
         });
+        this.PostMessage({ Domain: document.domain });
     };
     ClientMessenger.prototype.PostMessage = function (input) {
         this.m_Port.postMessage(input);

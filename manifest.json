@@ -10,7 +10,7 @@
     "default_title": "Click here!"
   },
   "background": {
-    "scripts" : ["Background/background.js"]
+    "scripts" : ["Include/core.js", "Include/aes.js", "Include/pbkdf2.js","Background/cryptor.js", "Background/background.js"]
   },
   "content_scripts": [
     {
