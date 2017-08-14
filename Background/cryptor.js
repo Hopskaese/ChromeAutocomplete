@@ -1,4 +1,6 @@
 /// <reference path="../Include/aes.ts"/>
+//https://jsperf.com/crypto-js-pbkdf2-sha512
+//https://stackoverflow.com/questions/20519166/cant-decrypt-string-with-cryptojs
 var Cryptor = (function () {
     function Cryptor() {
         this.m_KeySize = 256;
@@ -13,6 +15,7 @@ var Cryptor = (function () {
             iterations: this.m_Iterations
         });
         var iv = CryptoJS.lib.WordArray.random(128 / 8);
+        // remember to call encrypted.toString() before savin in database because otherwise its object
         var encrypted = CryptoJS.AES.encrypt(username, key, {
             iv: iv,
             padding: CryptoJS.pad.Pkcs7,
@@ -25,8 +28,7 @@ var Cryptor = (function () {
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        console.log("Decrypted:" + decrypt);
+        console.log("Decrypted:" + decrypt.toString(CryptoJS.enc.Utf8));
     };
     return Cryptor;
 }());
-
