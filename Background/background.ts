@@ -30,19 +30,29 @@ class ServerMessenger {
 			{
 				console.log("popup connected");
 				self.InitPopupListener(port);
-				let doesExist = false;
-				if (self.m_Domain)
-				{
-					let dataset = self.m_Model.GetUserData(self.m_Domain, function(dataset) {
-						console.log("Returned data:"+dataset);
-						if (dataset)
-							doesExist = true;	
 
-						self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}})
-					});			
-				}
+				self.m_Model.GetMainData(function(dataset) {
+
+					if(!dataset)
+					{
+						self.m_Port["popup"].postMessage({isNotSetup : "placeholder"});
+					}
+					else 
+					{
+						let doesExist = false;
+						if (self.m_Domain)
+						{
+							self.m_Model.GetUserData(self.m_Domain, function(dataset) {
+							console.log("Returned data:"+dataset);
+							if (dataset)
+								doesExist = true;	
+
+							self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}})
+						});			
+						}
+					}
+				});
 			}
-
 		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {
@@ -62,6 +72,10 @@ class ServerMessenger {
 			{
 				let user = msg.NewUserInfo;
 				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+			}
+			else if (msg.MasterPasswordSetup)
+			{
+				self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
 			}
 			else if (msg.MasterPassword)
 			{

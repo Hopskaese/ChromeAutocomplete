@@ -1,5 +1,6 @@
 
-/// <reference path="../Include/aes.ts"/>
+declare var CryptoJS:any;
+
 //https://jsperf.com/crypto-js-pbkdf2-sha512
 //https://stackoverflow.com/questions/20519166/cant-decrypt-string-with-cryptojs
 class Cryptor {
@@ -11,6 +12,13 @@ class Cryptor {
 		this.m_KeySize = 256;
 		this.m_IvSize = 128;
 		this.m_Iterations = 100;
+	}
+
+	MainSetup(masterpassword:string, callback:(hashed_pw:string, salt:string)=>void):void
+	{
+		let salt = CryptoJS.lib.WordArray.random(128/8);
+		let hashed_pw = CryptoJS.SHA256(masterpassword);
+		callback(CryptoJS.enc.Utf8.stringify(hashed_pw), CryptoJS.enc.Utf8.stringify(salt));
 	}
 
 	Encrypt(username:string, password:string):void {

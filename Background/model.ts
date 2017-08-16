@@ -32,6 +32,33 @@ class Model {
 			callback(dataset);
 		});
 	}
+	SaveMainData(hash:string, salt:string):void {
+		let data = {"Hash": hash, "Salt":salt};
+		chrome.storage.local.set({MainData : data}, function() {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+				console.log("Last error" + lasterror.message);
+
+			console.log("Main data has been saved");
+		});
+	}
+	GetMainData(callback:(isSetup:boolean)=>any): void {
+		chrome.storage.local.get("MainData", function(dataset) {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+			{
+				console.log("Error retrieving value from storage" + lasterror.message);
+				callback(false);
+			}
+			else if (Object.keys(dataset).length == 0) 
+			{
+				console.log("record does not exist");
+				callback(false);
+			}
+			console.log("Found record. Returning");
+			callback(true);
+		});
+	}
 	GetCurDataset(): any {
 		return this.m_CurDataset;
 	}

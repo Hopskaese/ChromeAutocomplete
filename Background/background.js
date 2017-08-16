@@ -19,15 +19,22 @@ var ServerMessenger = (function () {
             else if (port.name == "popup") {
                 console.log("popup connected");
                 self.InitPopupListener(port);
-                var doesExist_1 = false;
-                if (self.m_Domain) {
-                    var dataset = self.m_Model.GetUserData(self.m_Domain, function (dataset) {
-                        console.log("Returned data:" + dataset);
-                        if (dataset)
-                            doesExist_1 = true;
-                        self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist_1 } });
-                    });
-                }
+                self.m_Model.GetMainData(function (dataset) {
+                    if (!dataset) {
+                        self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
+                    }
+                    else {
+                        var doesExist_1 = false;
+                        if (self.m_Domain) {
+                            self.m_Model.GetUserData(self.m_Domain, function (dataset) {
+                                console.log("Returned data:" + dataset);
+                                if (dataset)
+                                    doesExist_1 = true;
+                                self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist_1 } });
+                            });
+                        }
+                    }
+                });
             }
         });
     };
@@ -46,6 +53,9 @@ var ServerMessenger = (function () {
             if (msg.NewUserInfo && self.m_Domain) {
                 var user = msg.NewUserInfo;
                 self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+            }
+            else if (msg.MasterPasswordSetup) {
+                self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
             }
             else if (msg.MasterPassword) {
                 console.log("going to encrypt masterpassword" + msg.MasterPassword);

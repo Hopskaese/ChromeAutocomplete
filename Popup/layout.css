@@ -6,6 +6,6 @@ body {
 	margin-bottom:5%;
 }
 
-#new-credentials, #master-password {
+#new-credentials, #master-password, #set-master-password {
 	display : none;
 }

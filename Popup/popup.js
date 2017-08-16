@@ -13,6 +13,9 @@ var ClientMessenger = (function () {
                 var val = msg.DomainExists.val;
                 self.m_Manager.SetLayout(val);
             }
+            else if (msg.isNotSetup) {
+                document.getElementById("set-master-password").style.display = "block";
+            }
         });
     };
     ClientMessenger.prototype.PostMessage = function (input) {
@@ -39,13 +42,15 @@ var PopupManager = (function () {
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
             });
+            document.getElementById("post-set-master-password").addEventListener("click", function () {
+                var password = document.getElementById("set-master-password-input").value;
+                if (password)
+                    self.m_Messenger.PostMessage({ MasterPasswordSetup: password });
+            });
         });
     };
     PopupManager.prototype.SetLayout = function (doesExist) {
-        /*
-        document.getElementById("master-password").style.visibility = doesExist ? "visible" : "hidden";
-        document.getElementById("new-credentials").style.visibility = doesExist ? "hidden" : "visible";
-        */
+        document.getElementById("set-master-password").style.display = "none";
         document.getElementById("master-password").style.display = doesExist ? "block" : "none";
         document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
     };

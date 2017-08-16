@@ -17,8 +17,12 @@ class ClientMessenger {
         let val:boolean = msg.DomainExists.val;
         self.m_Manager.SetLayout(val);
       }
+      else if (msg.isNotSetup)
+      {
+         document.getElementById("set-master-password").style.display = "block";
+      }
     });
-  }
+  } 
   PostMessage(input:object):void {
     this.m_Port.postMessage(input);
   }
@@ -45,9 +49,15 @@ class PopupManager {
          if (password)
            self.m_Messenger.PostMessage({MasterPassword: password});
       });
+      document.getElementById("post-set-master-password").addEventListener("click", function() {
+        let password = (<HTMLInputElement>document.getElementById("set-master-password-input")).value;
+        if (password)
+          self.m_Messenger.PostMessage({MasterPasswordSetup : password});
+      });
     });
   }
   SetLayout(doesExist:boolean):void {
+    document.getElementById("set-master-password").style.display = "none";
     document.getElementById("master-password").style.display = doesExist ? "block" : "none";
     document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
   }
