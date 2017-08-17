@@ -20,6 +20,7 @@ var ServerMessenger = (function () {
                 console.log("popup connected");
                 self.InitPopupListener(port);
                 self.m_Model.GetMainData(function (dataset) {
+                    console.log("In getmaindata callback");
                     if (!dataset) {
                         self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
                     }

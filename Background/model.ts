@@ -21,11 +21,13 @@ class Model {
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
 				callback(null);
+				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
 				callback(null);
+				return;
 			}
 			console.log("Found record. Returning");
 			self.m_CurDataset = dataset;
@@ -49,11 +51,13 @@ class Model {
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
 				callback(false);
+				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
 				callback(false);
+				return;
 			}
 			console.log("Found record. Returning");
 			callback(true);
