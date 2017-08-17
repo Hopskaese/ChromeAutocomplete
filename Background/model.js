@@ -33,7 +33,7 @@ var Model = (function () {
             callback(dataset);
         });
     };
-    Model.prototype.SaveMainData = function (hash, salt) {
+    Model.prototype.SaveMainData = function (hash, salt, iv) {
         var data = { "Hash": hash, "Salt": salt };
         chrome.storage.local.set({ MainData: data }, function () {
             var lasterror = chrome.runtime.lastError;
@@ -59,10 +59,29 @@ var Model = (function () {
             callback(true);
         });
     };
+    Model.prototype.Authenticate = function (PasswordHash, callback) {
+        chrome.storage.local.get("MainData", function (dataset) {
+            var lasterror = chrome.runtime.lastError;
+            if (lasterror) {
+                console.log("Error retrieving value from storage" + lasterror.message);
+                callback(false);
+                return;
+            }
+            else if (Object.keys(dataset).length == 0) {
+                console.log("record does not exist");
+                callback(false);
+                return;
+            }
+            else if (!(dataset.MainData.hash == PasswordHash)) {
+                callback(false);
+                return;
+            }
+            console.log("Found record. Returning");
+            callback(true);
+        });
+    };
     Model.prototype.GetCurDataset = function () {
         return this.m_CurDataset;
-    };
-    Model.prototype.Authenticate = function (password) {
     };
     return Model;
 }());

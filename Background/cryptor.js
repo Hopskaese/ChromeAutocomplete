@@ -8,8 +8,9 @@ var Cryptor = (function () {
     }
     Cryptor.prototype.MainSetup = function (masterpassword, callback) {
         var salt = CryptoJS.lib.WordArray.random(128 / 8);
+        var iv = CryptoJS.lib.WordArray.random(128 / 8);
         var hashed_pw = CryptoJS.SHA256(masterpassword);
-        callback(CryptoJS.enc.Utf8.stringify(hashed_pw), CryptoJS.enc.Utf8.stringify(salt));
+        callback(CryptoJS.enc.Utf8.stringify(hashed_pw), CryptoJS.enc.Utf8.stringify(salt), CryptoJS.enc.Utf8.stringify(iv));
     };
     Cryptor.prototype.Encrypt = function (username, password) {
         var pass = "test";
@@ -33,6 +34,10 @@ var Cryptor = (function () {
             mode: CryptoJS.mode.CBC
         });
         console.log("Decrypted:" + decrypt.toString(CryptoJS.enc.Utf8));
+    };
+    Cryptor.prototype.Hash = function (masterpassword) {
+        var hashed_pw = CryptoJS.SHA256(masterpassword);
+        return CryptoJS.enc.Utf8.stringify(hashed_pw);
     };
     return Cryptor;
 }());

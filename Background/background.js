@@ -60,7 +60,11 @@ var ServerMessenger = (function () {
             }
             else if (msg.MasterPassword) {
                 console.log("going to encrypt masterpassword" + msg.MasterPassword);
-                self.m_Cryptor.Encrypt("sadasdas", msg.MasterPassword);
+                var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
+                self.m_Model.Authenticate(hashed_pw, function (result) {
+                    if (result) { }
+                    else { }
+                });
                 //self.m_Port["filler"].postMessage({Userdata : self.m_Model.GetCurDataset()})
                 /*
                 Authenticate();

@@ -14,11 +14,12 @@ class Cryptor {
 		this.m_Iterations = 100;
 	}
 
-	MainSetup(masterpassword:string, callback:(hashed_pw:string, salt:string)=>void):void
+	MainSetup(masterpassword:string, callback:(hashed_pw:string, salt:string, iv:string)=>void):void
 	{
 		let salt = CryptoJS.lib.WordArray.random(128/8);
+		let iv  = CryptoJS.lib.WordArray.random(128/8);
 		let hashed_pw = CryptoJS.SHA256(masterpassword);
-		callback(CryptoJS.enc.Utf8.stringify(hashed_pw), CryptoJS.enc.Utf8.stringify(salt));
+		callback(CryptoJS.enc.Utf8.stringify(hashed_pw), CryptoJS.enc.Utf8.stringify(salt), CryptoJS.enc.Utf8.stringify(iv));
 	}
 
 	Encrypt(username:string, password:string):void {
@@ -48,5 +49,11 @@ class Cryptor {
 		});
 
 		console.log("Decrypted:"+ decrypt.toString(CryptoJS.enc.Utf8));
+	}
+
+	Hash(masterpassword:string):string
+	{
+		let hashed_pw = CryptoJS.SHA256(masterpassword);
+		return CryptoJS.enc.Utf8.stringify(hashed_pw);
 	}
 }

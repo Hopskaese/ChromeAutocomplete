@@ -34,7 +34,7 @@ class Model {
 			callback(dataset);
 		});
 	}
-	SaveMainData(hash:string, salt:string):void {
+	SaveMainData(hash:string, salt:string, iv:string):void {
 		let data = {"Hash": hash, "Salt":salt};
 		chrome.storage.local.set({MainData : data}, function() {
 			let lasterror = chrome.runtime.lastError;
@@ -63,11 +63,34 @@ class Model {
 			callback(true);
 		});
 	}
+	Authenticate(PasswordHash:string, callback:(result:boolean)=>void):void
+	{
+		chrome.storage.local.get("MainData", function(dataset) {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+			{
+				console.log("Error retrieving value from storage" + lasterror.message);
+				callback(false);
+				return;
+			}
+			else if (Object.keys(dataset).length == 0) 
+			{
+				console.log("record does not exist");
+				callback(false);
+				return;
+			}
+			else if (!(dataset.MainData.hash == PasswordHash))
+			{
+				callback(false);
+				return;
+			}
+
+			console.log("Found record. Returning");
+			callback(true);
+		});
+	}
 	GetCurDataset(): any {
 		return this.m_CurDataset;
-	}
-	Authenticate(password:string) {
-
 	}
 }
 
