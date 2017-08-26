@@ -34,7 +34,7 @@ var Model = (function () {
         });
     };
     Model.prototype.SaveMainData = function (hash, salt, iv) {
-        var data = { "Hash": hash, "Salt": salt };
+        var data = { "Hash": hash, "Salt": salt, "Iv": iv };
         chrome.storage.local.set({ MainData: data }, function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror)
@@ -47,16 +47,16 @@ var Model = (function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(false);
+                callback(null);
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                callback(false);
+                callback(null);
                 return;
             }
             console.log("Found record. Returning");
-            callback(true);
+            callback(dataset);
         });
     };
     Model.prototype.Authenticate = function (PasswordHash, callback) {

@@ -20,10 +20,11 @@ var ServerMessenger = (function () {
                 console.log("popup connected");
                 self.InitPopupListener(port);
                 self.m_Model.GetMainData(function (dataset) {
-                    if (!dataset) {
+                    if (dataset == null) {
                         self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
                     }
                     else {
+                        self.m_Cryptor.SetIvAndSalt(dataset.Salt, dataset.Iv);
                         var doesExist_1 = false;
                         if (self.m_Domain) {
                             self.m_Model.GetUserData(self.m_Domain, function (dataset) {
@@ -52,11 +53,12 @@ var ServerMessenger = (function () {
             console.log("Popup msg:" + msg.NewUserInfo);
             if (msg.NewUserInfo && self.m_Domain) {
                 var user = msg.NewUserInfo;
+                self.m_Cryptor.Encrypt(user.Username, user.Password);
                 self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {
-                    if (!isSetup)
+                    if (isSetup == null)
                         self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
                 });
             }
@@ -67,7 +69,9 @@ var ServerMessenger = (function () {
                     if (result)
                         self.m_Model.GetUserData(self.m_Domain, function (dataset) {
                             if (dataset)
-                                self.m_Port["filler"].postMessage({ Userdata: dataset });
+                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function () {
+                                    self.m_Port["filler"].postMessage({ Userdata: dataset });
+                                });
                         });
                     else
                         self.m_Port["popup"].postMessage({ Error: "Wrong Master Password" });

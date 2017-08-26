@@ -31,13 +31,14 @@ class ServerMessenger {
 				console.log("popup connected");
 				self.InitPopupListener(port);
 
-				self.m_Model.GetMainData(function(dataset) {
-					if (!dataset)
+				self.m_Model.GetMainData(function(dataset:any) {
+					if (dataset == null)
 					{
 						self.m_Port["popup"].postMessage({isNotSetup : "placeholder"});
 					}
 					else 
 					{
+						self.m_Cryptor.SetIvAndSalt(dataset.Salt, dataset.Iv);
 						let doesExist = false;
 						if (self.m_Domain)
 						{
@@ -70,12 +71,13 @@ class ServerMessenger {
 			if (msg.NewUserInfo && self.m_Domain)
 			{
 				let user = msg.NewUserInfo;
+				self.m_Cryptor.Encrypt(user.Username, user.Password)
 				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
 			}
 			else if (msg.MasterPasswordSetup)
 			{
-				self.m_Model.GetMainData(function(isSetup:boolean) {
-					if(!isSetup)
+				self.m_Model.GetMainData(function(isSetup:any) {
+					if(isSetup == null)
 						self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
 				});
 			}
@@ -87,7 +89,9 @@ class ServerMessenger {
 					if (result)
 						self.m_Model.GetUserData(self.m_Domain, function(dataset) {
 							if (dataset)
-								self.m_Port["filler"].postMessage({Userdata : dataset});
+								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function() {
+									self.m_Port["filler"].postMessage({Userdata : dataset});
+								});
 						});
 					else 
 						self.m_Port["popup"].postMessage({Error : "Wrong Master Password"})
