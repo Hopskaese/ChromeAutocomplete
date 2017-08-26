@@ -20,7 +20,7 @@ var Cryptor = (function () {
             iterations: this.m_Iterations
         });
         var iv = CryptoJS.lib.WordArray.random(128 / 8);
-        // remember to call encrypted.toString() before savin in database because otherwise its object
+        // remember to call encrypted.toString() before savin in database because its an object
         var encrypted = CryptoJS.AES.encrypt(username, key, {
             iv: iv,
             padding: CryptoJS.pad.Pkcs7,

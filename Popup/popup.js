@@ -10,11 +10,13 @@ var ClientMessenger = (function () {
         this.m_Port.onMessage.addListener(function (msg, sender) {
             if (msg.DomainExists) {
                 console.log("Domain exists?:" + msg.DomainExists.val);
-                var val = msg.DomainExists.val;
-                self.m_Manager.SetLayout(val);
+                self.m_Manager.SetLayout(msg.DomainExists.val);
             }
             else if (msg.isNotSetup) {
-                document.getElementById("set-master-password").style.display = "block";
+                self.m_Manager.DisplayElement("set-master-password");
+            }
+            else if (msg.Error) {
+                self.m_Manager.DisplayError(msg.Error);
             }
         });
     };
@@ -51,8 +53,18 @@ var PopupManager = (function () {
     };
     PopupManager.prototype.SetLayout = function (doesExist) {
         document.getElementById("set-master-password").style.display = "none";
+        document.getElementById("error-messages").style.display = "none";
         document.getElementById("master-password").style.display = doesExist ? "block" : "none";
         document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
+    };
+    PopupManager.prototype.DisplayError = function (message) {
+        var element = document.getElementById("error-messages");
+        var paragraph = document.getElementById("error-message");
+        paragraph.innerHTML = message;
+        element.style.display = "block";
+    };
+    PopupManager.prototype.DisplayElement = function (id) {
+        document.getElementById(id).style.display = "block";
     };
     return PopupManager;
 }());

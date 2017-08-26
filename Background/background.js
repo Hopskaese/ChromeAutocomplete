@@ -20,7 +20,6 @@ var ServerMessenger = (function () {
                 console.log("popup connected");
                 self.InitPopupListener(port);
                 self.m_Model.GetMainData(function (dataset) {
-                    console.log("In getmaindata callback");
                     if (!dataset) {
                         self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
                     }
@@ -56,28 +55,23 @@ var ServerMessenger = (function () {
                 self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
             }
             else if (msg.MasterPasswordSetup) {
-                self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
+                self.m_Model.GetMainData(function (isSetup) {
+                    if (!isSetup)
+                        self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
+                });
             }
             else if (msg.MasterPassword) {
                 console.log("going to encrypt masterpassword" + msg.MasterPassword);
                 var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
                 self.m_Model.Authenticate(hashed_pw, function (result) {
-                    if (result) { }
-                    else { }
+                    if (result)
+                        self.m_Model.GetUserData(self.m_Domain, function (dataset) {
+                            if (dataset)
+                                self.m_Port["filler"].postMessage({ Userdata: dataset });
+                        });
+                    else
+                        self.m_Port["popup"].postMessage({ Error: "Wrong Master Password" });
                 });
-                //self.m_Port["filler"].postMessage({Userdata : self.m_Model.GetCurDataset()})
-                /*
-                Authenticate();
-                let credentials = Model.GetUserData(m_Domain);
-                m_Port["filler"].postMessage({"credentials" : credentials});
-                
-                var dataset = Model.GetUserData(m_Domain);
-                if (dataset)
-                    m_Port["filler"].postMessage({"Credentials" : credentials});
-                else
-                {}
-                Implement general error class.
-                */
             }
         });
     };

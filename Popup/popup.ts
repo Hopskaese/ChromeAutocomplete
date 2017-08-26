@@ -14,12 +14,15 @@ class ClientMessenger {
       if (msg.DomainExists)
       {
         console.log("Domain exists?:"+ msg.DomainExists.val)
-        let val:boolean = msg.DomainExists.val;
-        self.m_Manager.SetLayout(val);
+        self.m_Manager.SetLayout(msg.DomainExists.val);
       }
       else if (msg.isNotSetup)
       {
-         document.getElementById("set-master-password").style.display = "block";
+         self.m_Manager.DisplayElement("set-master-password");
+      }
+      else if (msg.Error)
+      {
+        self.m_Manager.DisplayError(msg.Error);
       }
     });
   } 
@@ -58,8 +61,18 @@ class PopupManager {
   }
   SetLayout(doesExist:boolean):void {
     document.getElementById("set-master-password").style.display = "none";
+    document.getElementById("error-messages").style.display = "none";
     document.getElementById("master-password").style.display = doesExist ? "block" : "none";
     document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
+  }
+  DisplayError(message:string):void {
+    let element = <HTMLInputElement>document.getElementById("error-messages");
+    let paragraph = <HTMLInputElement>document.getElementById("error-message");
+    paragraph.innerHTML = message;
+    element.style.display = "block";
+  }
+  DisplayElement(id:string):void {
+    document.getElementById(id).style.display = "block";
   }
 }
 
