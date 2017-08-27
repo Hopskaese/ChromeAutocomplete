@@ -24,11 +24,10 @@ var ServerMessenger = (function () {
                         self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
                     }
                     else {
-                        self.m_Cryptor.SetIvAndSalt(dataset.Salt, dataset.Iv);
+                        self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
                         var doesExist_1 = false;
                         if (self.m_Domain) {
                             self.m_Model.GetUserData(self.m_Domain, function (dataset) {
-                                console.log("Returned data:" + dataset);
                                 if (dataset)
                                     doesExist_1 = true;
                                 self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist_1 } });
@@ -50,11 +49,12 @@ var ServerMessenger = (function () {
     ServerMessenger.prototype.InitPopupListener = function (port) {
         var self = this;
         port.onMessage.addListener(function (msg) {
-            console.log("Popup msg:" + msg.NewUserInfo);
             if (msg.NewUserInfo && self.m_Domain) {
                 var user = msg.NewUserInfo;
-                self.m_Cryptor.Encrypt(user.Username, user.Password);
-                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+                self.m_Cryptor.Encrypt(user.Username, user.Password, function (encrypted_Username, encrypted_Password) {
+                    console.log("Encrypted data" + encrypted_Password + " " + encrypted_Username);
+                    self.m_Model.SaveUserData(self.m_Domain, encrypted_Username, encrypted_Password);
+                });
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {
@@ -63,14 +63,16 @@ var ServerMessenger = (function () {
                 });
             }
             else if (msg.MasterPassword) {
-                console.log("going to encrypt masterpassword" + msg.MasterPassword);
                 var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
                 self.m_Model.Authenticate(hashed_pw, function (result) {
                     if (result)
                         self.m_Model.GetUserData(self.m_Domain, function (dataset) {
                             if (dataset)
-                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function () {
-                                    self.m_Port["filler"].postMessage({ Userdata: dataset });
+                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function (decrypted_dataset) {
+                                    if (decrypted_dataset.Username.length() === 0 || decrypted_dataset.Password.length() === 0)
+                                        self.m_Port["popup"].postMessage({ Error: "Could not decrypt data." });
+                                    else
+                                        self.m_Port["filler"].postMessage({ Userdata: dataset });
                                 });
                         });
                     else

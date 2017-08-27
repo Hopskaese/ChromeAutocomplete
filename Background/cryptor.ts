@@ -23,32 +23,44 @@ class Cryptor {
 		let salt = CryptoJS.lib.WordArray.random(128/8);
 		let iv  = CryptoJS.lib.WordArray.random(128/8);
 		let hashed_pw = CryptoJS.SHA256(masterpassword);
-		callback(JSON.stringify(hashed_pw), JSON.stringify(salt), JSON.stringify(iv));
+		console.log(iv.toString());
+		callback(hashed_pw.toString(), salt.toString(), iv.toString());
 	}
 
 	SetIvAndSalt(iv:string, salt:string)
 	{
+		console.log("iv and salt being set: "+iv);
 		this.m_Iv = iv;
 		this.m_Salt = salt;
 	}
 
-	Encrypt(username:string, password:string):void {
+	Encrypt(username:string, password:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
+		
 		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
+		{
+			console.log("Salt or Iv error");
 			return;
-
+		}
+		
+		//256 bit key
 		let key = CryptoJS.PBKDF2(password, this.m_Salt, {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations
 		});
-
-		// remember to call encrypted.toString() before savin in database because its an object
-		let encrypted = CryptoJS.AES.encrypt(username, key, {
+	
+		username = CryptoJS.AES.encrypt(username, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
 
-		console.log("Encrypted username:"+ encrypted);
+		password = CryptoJS.AES.encrypt(password, key.toString(), {
+			iv: this.m_Iv,
+			padding: CryptoJS.pad.Pkcs7,
+			mode: CryptoJS.mode.CBC
+		});
+
+		callback(username.toString(), password.toString());
 	}
 
 	Decrypt(password:string, dataset:any, callback:(dataset:any)=>void):void {
@@ -70,9 +82,8 @@ class Cryptor {
 			mode: CryptoJS.mode.CBC
 		});
 
+		console.log("Decrypted pw: "+ dataset.Password);
 		callback(dataset);
-
-		console.log("Decrypted:"+ dataset);
 	}
 
 	Hash(masterpassword:string):string

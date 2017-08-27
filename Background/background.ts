@@ -38,16 +38,15 @@ class ServerMessenger {
 					}
 					else 
 					{
-						self.m_Cryptor.SetIvAndSalt(dataset.Salt, dataset.Iv);
+						self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
 						let doesExist = false;
 						if (self.m_Domain)
 						{
 							self.m_Model.GetUserData(self.m_Domain, function(dataset) {
-							console.log("Returned data:"+dataset);
 							if (dataset)
 								doesExist = true;	
 
-							self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}})
+							self.m_Port["popup"].postMessage({DomainExists : {val : doesExist}});
 						});			
 						}
 					}
@@ -67,12 +66,13 @@ class ServerMessenger {
 	InitPopupListener(port:chrome.runtime.Port):void {
 		var self = this;
 		port.onMessage.addListener(function(msg:any) {
-			console.log("Popup msg:"+ msg.NewUserInfo);
 			if (msg.NewUserInfo && self.m_Domain)
 			{
 				let user = msg.NewUserInfo;
-				self.m_Cryptor.Encrypt(user.Username, user.Password)
-				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+				self.m_Cryptor.Encrypt(user.Username, user.Password, function(encrypted_Username, encrypted_Password) {
+					console.log("Encrypted data"+ encrypted_Password+ " "+ encrypted_Username);
+					self.m_Model.SaveUserData(self.m_Domain, encrypted_Username, encrypted_Password);
+				});
 			}
 			else if (msg.MasterPasswordSetup)
 			{
@@ -83,14 +83,16 @@ class ServerMessenger {
 			}
 			else if (msg.MasterPassword)
 			{
-				console.log("going to encrypt masterpassword"+ msg.MasterPassword);
 				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
 				self.m_Model.Authenticate(hashed_pw, function(result:boolean) {
 					if (result)
 						self.m_Model.GetUserData(self.m_Domain, function(dataset) {
 							if (dataset)
-								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function() {
-									self.m_Port["filler"].postMessage({Userdata : dataset});
+								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function(decrypted_dataset) {
+									if (decrypted_dataset.Username.length() === 0 || decrypted_dataset.Password.length() === 0)
+										self.m_Port["popup"].postMessage({Error: "Could not decrypt data."});
+									else
+										self.m_Port["filler"].postMessage({Userdata : dataset});
 								});
 						});
 					else 

@@ -59,7 +59,6 @@ class Model {
 				callback(null);
 				return;
 			}
-			console.log("Found record. Returning");
 			callback(dataset);
 		});
 	}
