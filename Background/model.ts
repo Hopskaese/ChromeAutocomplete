@@ -14,7 +14,7 @@ class Model {
 	GetUserData(domain:string, callback:(data:object)=>any): void {
 		let self = this;
 		console.log("Trying to get data for:" + domain);
-		chrome.storage.local.get([domain], function(dataset) {
+		chrome.storage.local.get([domain], function(dataset:any) {
 			console.log(dataset);
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
@@ -30,8 +30,8 @@ class Model {
 				return;
 			}
 			console.log("Found record. Returning");
-			self.m_CurDataset = dataset;
-			callback(dataset);
+			self.m_CurDataset = dataset[domain];
+			callback(dataset[domain]);
 		});
 	}
 	SaveMainData(hash:string, salt:string, iv:string):void {
@@ -78,7 +78,7 @@ class Model {
 				callback(false);
 				return;
 			}
-			else if (!(dataset.MainData.hash == PasswordHash))
+			else if (!(dataset.MainData.Hash == PasswordHash))
 			{
 				callback(false);
 				return;

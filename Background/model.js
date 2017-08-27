@@ -29,8 +29,8 @@ var Model = (function () {
                 return;
             }
             console.log("Found record. Returning");
-            self.m_CurDataset = dataset;
-            callback(dataset);
+            self.m_CurDataset = dataset[domain];
+            callback(dataset[domain]);
         });
     };
     Model.prototype.SaveMainData = function (hash, salt, iv) {
@@ -71,7 +71,7 @@ var Model = (function () {
                 callback(false);
                 return;
             }
-            else if (!(dataset.MainData.hash == PasswordHash)) {
+            else if (!(dataset.MainData.Hash == PasswordHash)) {
                 callback(false);
                 return;
             }

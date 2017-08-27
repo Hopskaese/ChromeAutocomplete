@@ -12,7 +12,6 @@ var Cryptor = (function () {
         var salt = CryptoJS.lib.WordArray.random(128 / 8);
         var iv = CryptoJS.lib.WordArray.random(128 / 8);
         var hashed_pw = CryptoJS.SHA256(masterpassword);
-        console.log(iv.toString());
         callback(hashed_pw.toString(), salt.toString(), iv.toString());
     };
     Cryptor.prototype.SetIvAndSalt = function (iv, salt) {
@@ -48,22 +47,25 @@ var Cryptor = (function () {
             iterations: this.m_Iterations
         });
         //decrypt
-        dataset.Username = CryptoJS.AES.decrypt(dataset.Username, key, {
+        console.log("USERNAMEEEEEEEEEEEEEE" + dataset.Username);
+        dataset.Username = CryptoJS.AES.decrypt(dataset.Username, key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        dataset.Password = CryptoJS.AES.decrypt(dataset.Password, key, {
+        dataset.Username = dataset.Username.toString(CryptoJS.enc.Utf8);
+        dataset.Password = CryptoJS.AES.decrypt(dataset.Password, key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
+        dataset.Password = dataset.Password.toString(CryptoJS.enc.Utf8);
         console.log("Decrypted pw: " + dataset.Password);
         callback(dataset);
     };
     Cryptor.prototype.Hash = function (masterpassword) {
         var hashed_pw = CryptoJS.SHA256(masterpassword);
-        return CryptoJS.enc.Utf8.stringify(hashed_pw);
+        return hashed_pw.toString();
     };
     return Cryptor;
 }());

@@ -23,7 +23,6 @@ class Cryptor {
 		let salt = CryptoJS.lib.WordArray.random(128/8);
 		let iv  = CryptoJS.lib.WordArray.random(128/8);
 		let hashed_pw = CryptoJS.SHA256(masterpassword);
-		console.log(iv.toString());
 		callback(hashed_pw.toString(), salt.toString(), iv.toString());
 	}
 
@@ -69,18 +68,20 @@ class Cryptor {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations
 		});
-			//decrypt
-		dataset.Username = CryptoJS.AES.decrypt(dataset.Username, key, {
+		//decrypted
+		dataset.Username = CryptoJS.AES.decrypt(dataset.Username, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
+		dataset.Username = dataset.Username.toString(CryptoJS.enc.Utf8);
 
-		dataset.Password = CryptoJS.AES.decrypt(dataset.Password, key, {
+		dataset.Password = CryptoJS.AES.decrypt(dataset.Password, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
+		dataset.Password = dataset.Password.toString(CryptoJS.enc.Utf8);
 
 		console.log("Decrypted pw: "+ dataset.Password);
 		callback(dataset);
@@ -89,6 +90,6 @@ class Cryptor {
 	Hash(masterpassword:string):string
 	{
 		let hashed_pw = CryptoJS.SHA256(masterpassword);
-		return CryptoJS.enc.Utf8.stringify(hashed_pw);
+		return hashed_pw.toString();
 	}
 }

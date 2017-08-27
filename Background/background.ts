@@ -70,7 +70,6 @@ class ServerMessenger {
 			{
 				let user = msg.NewUserInfo;
 				self.m_Cryptor.Encrypt(user.Username, user.Password, function(encrypted_Username, encrypted_Password) {
-					console.log("Encrypted data"+ encrypted_Password+ " "+ encrypted_Username);
 					self.m_Model.SaveUserData(self.m_Domain, encrypted_Username, encrypted_Password);
 				});
 			}
@@ -78,7 +77,7 @@ class ServerMessenger {
 			{
 				self.m_Model.GetMainData(function(isSetup:any) {
 					if(isSetup == null)
-						self.m_Cryptor.MainSetup(msg.MasterPassword, self.m_Model.SaveMainData);
+						self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
 				});
 			}
 			else if (msg.MasterPassword)
@@ -89,7 +88,7 @@ class ServerMessenger {
 						self.m_Model.GetUserData(self.m_Domain, function(dataset) {
 							if (dataset)
 								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function(decrypted_dataset) {
-									if (decrypted_dataset.Username.length() === 0 || decrypted_dataset.Password.length() === 0)
+									if (decrypted_dataset.Username.length === 0 || decrypted_dataset.Password.length === 0)
 										self.m_Port["popup"].postMessage({Error: "Could not decrypt data."});
 									else
 										self.m_Port["filler"].postMessage({Userdata : dataset});
