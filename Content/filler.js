@@ -18,7 +18,7 @@ var ClientMessenger = (function () {
         this.m_Port = chrome.runtime.connect({ name: "filler" });
         this.m_Port.onMessage.addListener(function (msg, sender) {
             if (msg.Userdata)
-                self.m_Filler.FillInInfo(msg.Userdata[document.domain].Username, msg.Userdata[document.domain].Password);
+                self.m_Filler.FillInInfo(msg.Userdata.Username, msg.Userdata.Password);
         });
         this.PostMessage({ Domain: document.domain });
     };
@@ -48,6 +48,8 @@ var Filler = (function () {
     Filler.prototype.FillInInfo = function (username, password) {
         this.m_FormObject["username"].value = username;
         this.m_FormObject["password"].value = password;
+        var form = this.m_Form;
+        form.submit();
     };
     return Filler;
 }());

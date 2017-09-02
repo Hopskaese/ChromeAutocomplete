@@ -33,7 +33,7 @@ class Cryptor {
 		this.m_Salt = salt;
 	}
 
-	Encrypt(username:string, password:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
+	Encrypt(username:string,password:string ,masterpassword:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
 		
 		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
 		{
@@ -42,7 +42,7 @@ class Cryptor {
 		}
 		
 		//256 bit key
-		let key = CryptoJS.PBKDF2(password, this.m_Salt, {
+		let key = CryptoJS.PBKDF2(masterpassword, this.m_Salt, {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations
 		});
@@ -58,7 +58,6 @@ class Cryptor {
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
-
 		callback(username.toString(), password.toString());
 	}
 

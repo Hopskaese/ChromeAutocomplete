@@ -23,7 +23,7 @@ class ClientMessenger {
 		this.m_Port = chrome.runtime.connect({name: "filler"});
 		this.m_Port.onMessage.addListener(function(msg:any,sender) {
 			if (msg.Userdata)
-				self.m_Filler.FillInInfo(msg.Userdata[document.domain].Username, msg.Userdata[document.domain].Password);	
+				self.m_Filler.FillInInfo(msg.Userdata.Username, msg.Userdata.Password);	
 		});
 		this.PostMessage({Domain: document.domain});
 	}
@@ -58,6 +58,8 @@ class Filler {
 	FillInInfo(username:string, password:string):void {
 		this.m_FormObject["username"].value = username;
 		this.m_FormObject["password"].value = password;
+		let form = <HTMLFormElement>this.m_Form;
+		form.submit();
 	}
 }
 var messenger = new ClientMessenger();

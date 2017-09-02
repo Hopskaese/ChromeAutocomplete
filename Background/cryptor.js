@@ -19,13 +19,13 @@ var Cryptor = (function () {
         this.m_Iv = iv;
         this.m_Salt = salt;
     };
-    Cryptor.prototype.Encrypt = function (username, password, callback) {
+    Cryptor.prototype.Encrypt = function (username, password, masterpassword, callback) {
         if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0) {
             console.log("Salt or Iv error");
             return;
         }
         //256 bit key
-        var key = CryptoJS.PBKDF2(password, this.m_Salt, {
+        var key = CryptoJS.PBKDF2(masterpassword, this.m_Salt, {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations
         });
@@ -46,9 +46,13 @@ var Cryptor = (function () {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations
         });
-        //decrypt
-        console.log("USERNAMEEEEEEEEEEEEEE" + dataset.Username);
+        //decrypted
         dataset.Username = CryptoJS.AES.decrypt(dataset.Username, key.toString(), {
+            iv: this.m_Iv,
+            padding: CryptoJS.pad.Pkcs7,
+            mode: CryptoJS.mode.CBC
+        });
+        var username = CryptoJS.AES.encrypt("nils", key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC

@@ -9,7 +9,6 @@ var ClientMessenger = (function () {
         var self = this;
         this.m_Port.onMessage.addListener(function (msg, sender) {
             if (msg.DomainExists) {
-                console.log("Domain exists?:" + msg.DomainExists.val);
                 self.m_Manager.SetLayout(msg.DomainExists.val);
             }
             else if (msg.isNotSetup) {
@@ -33,13 +32,19 @@ var PopupManager = (function () {
     PopupManager.prototype.InitListener = function () {
         var self = this;
         window.addEventListener("load", function () {
-            document.getElementById("post-login").addEventListener("click", function () {
+            document.getElementById("post-info").addEventListener("click", function () {
                 var username = document.getElementById("username-input").value;
                 var password = document.getElementById("password-input").value;
                 if (username && password)
-                    self.m_Messenger.PostMessage({ NewUserInfo: { Username: username, Password: password } });
+                    self.m_Messenger.PostMessage({ NewUserInfo: { Username: username, Password: password, MasterPassword: self.m_Password } });
+                self.m_Password = "";
             });
-            document.getElementById("post-master-password").addEventListener("click", function () {
+            document.getElementById("b-setup").addEventListener("click", function () {
+                self.m_Password = document.getElementById("master-password-input").value;
+                self.DisplayElement("new-credentials");
+                self.HideElement("master-password");
+            });
+            document.getElementById("b-login").addEventListener("click", function () {
                 var password = document.getElementById("master-password-input").value;
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
@@ -54,8 +59,16 @@ var PopupManager = (function () {
     PopupManager.prototype.SetLayout = function (doesExist) {
         document.getElementById("set-master-password").style.display = "none";
         document.getElementById("error-messages").style.display = "none";
-        document.getElementById("master-password").style.display = doesExist ? "block" : "none";
-        document.getElementById("new-credentials").style.display = doesExist ? "none" : "block";
+        document.getElementById("master-password").style.display = "block";
+        document.getElementById("b-login").style.display = doesExist ? "block" : "none";
+        document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+        var message = "";
+        if (doesExist)
+            message = "Please enter your MasterPassword so we can log you in";
+        else
+            message = "Please enter your MasterPassword so we can set up your data";
+        var header = document.getElementById("master-password-message");
+        header.innerHTML = message;
     };
     PopupManager.prototype.DisplayError = function (message) {
         var element = document.getElementById("error-messages");
@@ -65,6 +78,9 @@ var PopupManager = (function () {
     };
     PopupManager.prototype.DisplayElement = function (id) {
         document.getElementById(id).style.display = "block";
+    };
+    PopupManager.prototype.HideElement = function (id) {
+        document.getElementById(id).style.display = "none";
     };
     return PopupManager;
 }());
