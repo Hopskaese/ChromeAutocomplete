@@ -9,6 +9,7 @@
     "default_popup": "Popup/popup.html",
     "default_title": "Click here!"
   },
+  "options_page": "Popup/options.html",
   "background": {
     "scripts" : ["Include/aes.js", "Include/pbkdf2.js", "Include/sha256.js", "Background/cryptor.js", "Background/model.js", "Background/background.js"]
   },

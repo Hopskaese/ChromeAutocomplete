@@ -1,0 +1,12 @@
+.panel 
+{
+	margin-top:50%;
+}
+#auth-no
+{
+	color:#ff0000;
+}
+#auth-yes
+{
+	color:#7FFF00;
+}
