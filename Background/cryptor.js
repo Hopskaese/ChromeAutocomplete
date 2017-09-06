@@ -52,11 +52,6 @@ var Cryptor = (function () {
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        var username = CryptoJS.AES.encrypt("nils", key.toString(), {
-            iv: this.m_Iv,
-            padding: CryptoJS.pad.Pkcs7,
-            mode: CryptoJS.mode.CBC
-        });
         dataset.Username = dataset.Username.toString(CryptoJS.enc.Utf8);
         dataset.Password = CryptoJS.AES.decrypt(dataset.Password, key.toString(), {
             iv: this.m_Iv,

@@ -35,9 +35,9 @@ class PopupManager {
   private m_Password:String;
   constructor() {
     this.m_Messenger = new ClientMessenger(this);
-    this.InitListener();
+    this.InitListeners();
   }
-  InitListener():void {
+  InitListeners():void {
     let self = this;
     window.addEventListener("load", function() {
       document.getElementById("post-info").addEventListener("click", function() {
@@ -45,8 +45,8 @@ class PopupManager {
         let password = (<HTMLInputElement>document.getElementById("password-input")).value;
 
         if (username && password)
-            self.m_Messenger.PostMessage({NewUserInfo: {Username: username, Password: password, MasterPassword: self.m_Password}});
-        self.m_Password = "";
+          self.m_Messenger.PostMessage({NewUserInfo: {Username: username, Password: password, MasterPassword: self.m_Password}});
+          self.m_Password = "";
       });
       document.getElementById("b-setup").addEventListener("click", function() {
         self.m_Password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
@@ -95,4 +95,4 @@ class PopupManager {
   }
 }
 
-var PopupManger = new PopupManager();
+var manager = new PopupManager();

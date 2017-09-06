@@ -26,6 +26,9 @@
 		</div>
 	</nav>
 	<section class="container">
+		<article class="alert alert-danger" role="alert" id="error-messages">
+    	<p><strong>Error!</strong></p><p id="error-message">Wrong Master Password</p>
+     </article>
 		<article class="row">
 			<div class="col-md-4 col-md-offset-4">
         <div class="panel panel-default">
@@ -36,7 +39,7 @@
           		<h4 class="text-center">Enter Master-Password</h4>
           		<div class="panel-body">
           			<div class="form-group">
-          				<input id="masterpassword" type="password" placeholder="Password" class="form-control">
+          				<input id="master-password-input" type="password" placeholder="Password" class="form-control">
           			<div class="form-group">
           				<input class="btn btn-lg btn-primary btn-block" value="Authenticate" id="btn-authenticate">
           			</div>

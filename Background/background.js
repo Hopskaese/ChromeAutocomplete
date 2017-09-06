@@ -36,6 +36,21 @@ var ServerMessenger = (function () {
                     }
                 });
             }
+            else if (port.name == "options") {
+                console.log("options connected");
+                self.InitOptionsListener(port);
+            }
+        });
+    };
+    ServerMessenger.prototype.InitOptionsListener = function (port) {
+        var self = this;
+        port.onMessage.addListener(function (msg) {
+            if (msg.MasterPassword) {
+                var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
+                self.m_Model.Authenticate(hashed_pw, function (result) {
+                    self.m_Port["options"].postMessage({ Authenticated: { val: result } });
+                });
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {

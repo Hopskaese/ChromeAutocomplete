@@ -52,7 +52,25 @@ class ServerMessenger {
 					}
 				});
 			}
+			else if (port.name == "options")
+			{
+				console.log("options connected");
+				self.InitOptionsListener(port);
+
+			}
 		});
+	}
+	InitOptionsListener(port:chrome.runtime.Port):void {
+		var self = this;
+		port.onMessage.addListener(function(msg:any) {
+			if (msg.MasterPassword)
+			{
+				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
+				self.m_Model.Authenticate(hashed_pw, function(result:boolean) {
+					self.m_Port["options"].postMessage({Authenticated : {val : result}});
+				});
+			}
+		})
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {
 		var self = this;

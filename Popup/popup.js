@@ -27,9 +27,9 @@ var ClientMessenger = (function () {
 var PopupManager = (function () {
     function PopupManager() {
         this.m_Messenger = new ClientMessenger(this);
-        this.InitListener();
+        this.InitListeners();
     }
-    PopupManager.prototype.InitListener = function () {
+    PopupManager.prototype.InitListeners = function () {
         var self = this;
         window.addEventListener("load", function () {
             document.getElementById("post-info").addEventListener("click", function () {
@@ -84,4 +84,4 @@ var PopupManager = (function () {
     };
     return PopupManager;
 }());
-var PopupManger = new PopupManager();
+var manager = new PopupManager();
