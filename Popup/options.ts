@@ -40,6 +40,7 @@ class OptionsManager {
 		let self = this;
 		$(document).ready(function() {
 			$('#error-messages').hide();
+			$('#data-table').hide();
 			$('#auth-yes').hide();
 			$('#unlocked').hide();
 
@@ -47,6 +48,11 @@ class OptionsManager {
 				let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
         	if (password)
           		self.m_Messenger.PostMessage({MasterPassword: password});
+			});
+			$(document).keyup(function(event) {
+				if (event.keyCode == 13) {
+					$("#btn-authenticate").click();
+				}
 			});
 		});
 	}
@@ -60,7 +66,9 @@ class OptionsManager {
 		$('#error-messages').hide();
 		$('#locked').hide();
 		$('#unlocked').show();
-		$('.panel').fadeOut(1500);
+		$('.panel').fadeOut(1500, function() {
+			$('#data-table').show();
+		});
 		$('#auth-no').hide();
 		$('#auth-yes').show();
 	}

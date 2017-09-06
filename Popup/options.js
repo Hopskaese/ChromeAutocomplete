@@ -33,12 +33,18 @@ var OptionsManager = (function () {
         var self = this;
         $(document).ready(function () {
             $('#error-messages').hide();
+            $('#data-table').hide();
             $('#auth-yes').hide();
             $('#unlocked').hide();
             $('#btn-authenticate').on("click", function () {
                 var password = document.getElementById("master-password-input").value;
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
+            });
+            $(document).keyup(function (event) {
+                if (event.keyCode == 13) {
+                    $("#btn-authenticate").click();
+                }
             });
         });
     };
@@ -52,7 +58,9 @@ var OptionsManager = (function () {
         $('#error-messages').hide();
         $('#locked').hide();
         $('#unlocked').show();
-        $('.panel').fadeOut(1500);
+        $('.panel').fadeOut(1500, function () {
+            $('#data-table').show();
+        });
         $('#auth-no').hide();
         $('#auth-yes').show();
     };
