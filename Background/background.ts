@@ -56,7 +56,6 @@ class ServerMessenger {
 			{
 				console.log("options connected");
 				self.InitOptionsListener(port);
-
 			}
 		});
 	}
@@ -68,6 +67,16 @@ class ServerMessenger {
 				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
 				self.m_Model.Authenticate(hashed_pw, function(result:boolean) {
 					self.m_Port["options"].postMessage({Authenticated : {val : result}});
+				});
+			}
+			else if (msg.GetUserData)
+			{
+				let MasterPassword = msg.GetUserData;
+				self.m_Model.GetAllUserData(function(dataset:any) {
+					console.info(dataset);
+					for (let obj in dataset)
+						self.m_Cryptor.Decrypt(MasterPassword, dataset[obj], function(dec_dataset){});
+						self.m_Port["options"].postMessage({UserData : dataset});
 				});
 			}
 		})

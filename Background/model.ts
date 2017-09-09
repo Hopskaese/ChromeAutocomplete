@@ -11,6 +11,29 @@ class Model {
 				console.log("Last error" + lasterror.message);
 		});
 	}
+	GetAllUserData(callback:(data:object)=>any) :void {
+		chrome.storage.local.get(null, function(dataset:any) {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+			{
+				console.log("Error retrieving value from storage" + lasterror.message);
+				callback(null);
+				return;
+			}
+			else if (Object.keys(dataset).length == 0) 
+			{
+				console.log("Could not find any records");
+				callback(null);
+				return;
+			}
+
+			for (let key in dataset)
+				if (key == "MainData")
+					delete dataset[key];
+		
+			callback(dataset);
+		});
+	}
 	GetUserData(domain:string, callback:(data:object)=>any): void {
 		let self = this;
 		console.log("Trying to get data for:" + domain);

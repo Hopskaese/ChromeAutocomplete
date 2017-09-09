@@ -2,11 +2,14 @@
 /// <reference path="../Include/index2.d.ts"/>
 
 class OptionsMessenger {
-	private m_Port:chrome.runtime.Port;
+  private m_Port:chrome.runtime.Port;
   private m_Manager:OptionsManager;
+  private m_Pw:String;
+
 	constructor(manager:OptionsManager) {
     this.m_Manager = manager;
     this.InitListeners();
+    this.m_Pw = "";
   }
   InitListeners():void {
     this.m_Port = chrome.runtime.connect({name:"options"});
@@ -17,6 +20,11 @@ class OptionsMessenger {
     		if (msg.Authenticated.val) 
     		{
     			self.m_Manager.SetupAuthenticated();
+    			self.PostMessage({GetUserData : self.m_Pw});
+    		}
+    		else if (msg.UserData)
+    		{
+    			self.m_Manager.SetupUserData(msg.UserData);
     		}
     		else
     		{
@@ -24,6 +32,9 @@ class OptionsMessenger {
     		}
     	}
     });
+  }
+  SetPassword(password:string):void {
+  	this.m_Pw = password;
   } 
   PostMessage(input:object):void {
     this.m_Port.postMessage(input);
@@ -47,7 +58,10 @@ class OptionsManager {
 			$('#btn-authenticate').on("click", function() {
 				let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
         	if (password)
-          		self.m_Messenger.PostMessage({MasterPassword: password});
+        	{
+        		self.m_Messenger.SetPassword(password);
+          	self.m_Messenger.PostMessage({MasterPassword: password});
+        	}
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
@@ -71,6 +85,20 @@ class OptionsManager {
 		});
 		$('#auth-no').hide();
 		$('#auth-yes').show();
+	}
+	SetupUserData(dataset:any)
+	{
+		let cnt = 0;
+		for (let obj in dataset) 
+		{
+			$('tbody').append('<tr>\
+      						   <th scope="row">'+cnt+'</th>\
+      						   <td>'+obj+'</td>\
+                               <td>'+dataset[obj].Username+'</td>\
+                               <td>'+dataset[obj].Password+'</td>\
+                               </tr>');
+			cnt++;
+		}
 	}
 }
 

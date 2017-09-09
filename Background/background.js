@@ -51,6 +51,15 @@ var ServerMessenger = (function () {
                     self.m_Port["options"].postMessage({ Authenticated: { val: result } });
                 });
             }
+            else if (msg.GetUserData) {
+                var MasterPassword_1 = msg.GetUserData;
+                self.m_Model.GetAllUserData(function (dataset) {
+                    console.info(dataset);
+                    for (var obj in dataset)
+                        self.m_Cryptor.Decrypt(MasterPassword_1, dataset[obj], function (dec_dataset) { });
+                    self.m_Port["options"].postMessage({ UserData: dataset });
+                });
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
