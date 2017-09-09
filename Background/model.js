@@ -17,34 +17,31 @@ var Model = (function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("Could not find any records");
-                callback(null);
                 return;
             }
             for (var key in dataset)
                 if (key == "MainData")
                     delete dataset[key];
+            console.info(dataset);
             callback(dataset);
         });
     };
     Model.prototype.GetUserData = function (domain, callback) {
         var self = this;
-        console.log("Trying to get data for:" + domain);
+        console.log("Trying to get data for: " + domain);
         chrome.storage.local.get([domain], function (dataset) {
             console.log(dataset);
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                callback(null);
                 return;
             }
             console.log("Found record. Returning");
@@ -75,27 +72,6 @@ var Model = (function () {
                 return;
             }
             callback(dataset);
-        });
-    };
-    Model.prototype.Authenticate = function (PasswordHash, callback) {
-        chrome.storage.local.get("MainData", function (dataset) {
-            var lasterror = chrome.runtime.lastError;
-            if (lasterror) {
-                console.log("Error retrieving value from storage" + lasterror.message);
-                callback(false);
-                return;
-            }
-            else if (Object.keys(dataset).length == 0) {
-                console.log("record does not exist");
-                callback(false);
-                return;
-            }
-            else if (!(dataset.MainData.Hash == PasswordHash)) {
-                callback(false);
-                return;
-            }
-            console.log("Found record. Returning");
-            callback(true);
         });
     };
     Model.prototype.GetCurDataset = function () {

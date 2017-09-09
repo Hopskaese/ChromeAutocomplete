@@ -11,45 +11,41 @@ class Model {
 				console.log("Last error" + lasterror.message);
 		});
 	}
-	GetAllUserData(callback:(data:object)=>any) :void {
+	GetAllUserData(callback:(data:object)=>any): void {
 		chrome.storage.local.get(null, function(dataset:any) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("Could not find any records");
-				callback(null);
 				return;
 			}
-
 			for (let key in dataset)
 				if (key == "MainData")
 					delete dataset[key];
-		
+
+			console.info(dataset);
 			callback(dataset);
 		});
 	}
 	GetUserData(domain:string, callback:(data:object)=>any): void {
 		let self = this;
-		console.log("Trying to get data for:" + domain);
+		console.log("Trying to get data for: " + domain);
 		chrome.storage.local.get([domain], function(dataset:any) {
 			console.log(dataset);
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
-				callback(null);
 				return;
 			}
 			console.log("Found record. Returning");
@@ -83,32 +79,6 @@ class Model {
 				return;
 			}
 			callback(dataset);
-		});
-	}
-	Authenticate(PasswordHash:string, callback:(result:boolean)=>void):void
-	{
-		chrome.storage.local.get("MainData", function(dataset) {
-			let lasterror = chrome.runtime.lastError;
-			if (lasterror)
-			{
-				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(false);
-				return;
-			}
-			else if (Object.keys(dataset).length == 0) 
-			{
-				console.log("record does not exist");
-				callback(false);
-				return;
-			}
-			else if (!(dataset.MainData.Hash == PasswordHash))
-			{
-				callback(false);
-				return;
-			}
-
-			console.log("Found record. Returning");
-			callback(true);
 		});
 	}
 	GetCurDataset(): any {

@@ -33,7 +33,7 @@ class Cryptor {
 		this.m_Salt = salt;
 	}
 
-	Encrypt(username:string,password:string ,masterpassword:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
+	Encrypt(username:string, password:string , masterpassword:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
 		
 		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
 		{
@@ -61,8 +61,7 @@ class Cryptor {
 		callback(username.toString(), password.toString());
 	}
 
-	Decrypt(password:string, dataset:any, callback:(dataset:any)=>void):void {
-
+	Decrypt(password:string, dataset:any):void {
 		let key = CryptoJS.PBKDF2(password, this.m_Salt, {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations
@@ -81,9 +80,6 @@ class Cryptor {
 			mode: CryptoJS.mode.CBC
 		});
 		dataset.Password = dataset.Password.toString(CryptoJS.enc.Utf8);
-
-		console.log("Decrypted pw: "+ dataset.Password);
-		callback(dataset);
 	}
 
 	Hash(masterpassword:string):string

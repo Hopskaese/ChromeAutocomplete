@@ -65,21 +65,25 @@ class ServerMessenger {
 			if (msg.MasterPassword)
 			{
 				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-				self.m_Model.Authenticate(hashed_pw, function(result:boolean) {
-					self.m_Port["options"].postMessage({Authenticated : {val : result}});
+				self.m_Model.GetMainData(function(dataset:any) {
+					if (dataset.MainData.Hash == hashed_pw)
+					{
+						self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
+						self.m_Port["options"].postMessage({Authenticated : {val : true}});
+						self.m_Model.GetAllUserData(function(dataset:any) {
+							for (let obj in dataset)
+								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset[obj]) 
+						
+							self.m_Port["options"].postMessage({UserData : dataset});
+						});
+					}
+					else
+					{
+						self.m_Port["options"].postMessage({Authenticated : {val : false}});
+					}
 				});
 			}
-			else if (msg.GetUserData)
-			{
-				let MasterPassword = msg.GetUserData;
-				self.m_Model.GetAllUserData(function(dataset:any) {
-					console.info(dataset);
-					for (let obj in dataset)
-						self.m_Cryptor.Decrypt(MasterPassword, dataset[obj], function(dec_dataset){});
-						self.m_Port["options"].postMessage({UserData : dataset});
-				});
-			}
-		})
+		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {
 		var self = this;
@@ -110,16 +114,14 @@ class ServerMessenger {
 			else if (msg.MasterPassword)
 			{
 				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-				self.m_Model.Authenticate(hashed_pw, function(result:boolean) {
-					if (result)
-						self.m_Model.GetUserData(self.m_Domain, function(dataset) {
-							if (dataset)
-								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function(decrypted_dataset) {
-									if (decrypted_dataset.Username.length === 0 || decrypted_dataset.Password.length === 0)
-										self.m_Port["popup"].postMessage({Error: "Could not decrypt data."});
-									else
-										self.m_Port["filler"].postMessage({Userdata : dataset});
-								});
+				self.m_Model.GetMainData(function(dataset:any) {
+					if (dataset.MainData.Hash == hashed_pw)
+						self.m_Model.GetUserData(self.m_Domain, function(dataset:any) {
+							self.m_Cryptor.Decrypt(msg.MasterPassword, dataset);
+								if (dataset.Username.length === 0 || dataset.Password.length === 0)
+									self.m_Port["popup"].postMessage({Error: "Could not decrypt data."});
+								else
+									self.m_Port["filler"].postMessage({Userdata : dataset});
 						});
 					else 
 						self.m_Port["popup"].postMessage({Error : "Wrong Master Password"})

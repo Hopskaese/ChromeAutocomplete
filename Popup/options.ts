@@ -4,12 +4,10 @@
 class OptionsMessenger {
   private m_Port:chrome.runtime.Port;
   private m_Manager:OptionsManager;
-  private m_Pw:String;
 
 	constructor(manager:OptionsManager) {
     this.m_Manager = manager;
     this.InitListeners();
-    this.m_Pw = "";
   }
   InitListeners():void {
     this.m_Port = chrome.runtime.connect({name:"options"});
@@ -20,22 +18,18 @@ class OptionsMessenger {
     		if (msg.Authenticated.val) 
     		{
     			self.m_Manager.SetupAuthenticated();
-    			self.PostMessage({GetUserData : self.m_Pw});
-    		}
-    		else if (msg.UserData)
-    		{
-    			self.m_Manager.SetupUserData(msg.UserData);
     		}
     		else
     		{
     			self.m_Manager.ShowElement("error-messages");
     		}
     	}
+    	else if (msg.UserData)
+    	{
+    		self.m_Manager.SetupUserData(msg.UserData);
+    	}
     });
   }
-  SetPassword(password:string):void {
-  	this.m_Pw = password;
-  } 
   PostMessage(input:object):void {
     this.m_Port.postMessage(input);
   }
@@ -57,11 +51,8 @@ class OptionsManager {
 
 			$('#btn-authenticate').on("click", function() {
 				let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
-        	if (password)
-        	{
-        		self.m_Messenger.SetPassword(password);
-          	self.m_Messenger.PostMessage({MasterPassword: password});
-        	}
+        		if (password)
+          			self.m_Messenger.PostMessage({MasterPassword: password});
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
@@ -88,6 +79,7 @@ class OptionsManager {
 	}
 	SetupUserData(dataset:any)
 	{
+		console.info(dataset);
 		let cnt = 0;
 		for (let obj in dataset) 
 		{

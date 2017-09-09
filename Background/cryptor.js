@@ -41,7 +41,7 @@ var Cryptor = (function () {
         });
         callback(username.toString(), password.toString());
     };
-    Cryptor.prototype.Decrypt = function (password, dataset, callback) {
+    Cryptor.prototype.Decrypt = function (password, dataset) {
         var key = CryptoJS.PBKDF2(password, this.m_Salt, {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations
@@ -59,8 +59,6 @@ var Cryptor = (function () {
             mode: CryptoJS.mode.CBC
         });
         dataset.Password = dataset.Password.toString(CryptoJS.enc.Utf8);
-        console.log("Decrypted pw: " + dataset.Password);
-        callback(dataset);
     };
     Cryptor.prototype.Hash = function (masterpassword) {
         var hashed_pw = CryptoJS.SHA256(masterpassword);

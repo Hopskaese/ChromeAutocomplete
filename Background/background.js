@@ -46,18 +46,20 @@ var ServerMessenger = (function () {
         var self = this;
         port.onMessage.addListener(function (msg) {
             if (msg.MasterPassword) {
-                var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-                self.m_Model.Authenticate(hashed_pw, function (result) {
-                    self.m_Port["options"].postMessage({ Authenticated: { val: result } });
-                });
-            }
-            else if (msg.GetUserData) {
-                var MasterPassword_1 = msg.GetUserData;
-                self.m_Model.GetAllUserData(function (dataset) {
-                    console.info(dataset);
-                    for (var obj in dataset)
-                        self.m_Cryptor.Decrypt(MasterPassword_1, dataset[obj], function (dec_dataset) { });
-                    self.m_Port["options"].postMessage({ UserData: dataset });
+                var hashed_pw_1 = self.m_Cryptor.Hash(msg.MasterPassword);
+                self.m_Model.GetMainData(function (dataset) {
+                    if (dataset.MainData.Hash == hashed_pw_1) {
+                        self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
+                        self.m_Port["options"].postMessage({ Authenticated: { val: true } });
+                        self.m_Model.GetAllUserData(function (dataset) {
+                            for (var obj in dataset)
+                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset[obj]);
+                            self.m_Port["options"].postMessage({ UserData: dataset });
+                        });
+                    }
+                    else {
+                        self.m_Port["options"].postMessage({ Authenticated: { val: false } });
+                    }
                 });
             }
         });
@@ -86,17 +88,15 @@ var ServerMessenger = (function () {
                 });
             }
             else if (msg.MasterPassword) {
-                var hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-                self.m_Model.Authenticate(hashed_pw, function (result) {
-                    if (result)
+                var hashed_pw_2 = self.m_Cryptor.Hash(msg.MasterPassword);
+                self.m_Model.GetMainData(function (dataset) {
+                    if (dataset.MainData.Hash == hashed_pw_2)
                         self.m_Model.GetUserData(self.m_Domain, function (dataset) {
-                            if (dataset)
-                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset, function (decrypted_dataset) {
-                                    if (decrypted_dataset.Username.length === 0 || decrypted_dataset.Password.length === 0)
-                                        self.m_Port["popup"].postMessage({ Error: "Could not decrypt data." });
-                                    else
-                                        self.m_Port["filler"].postMessage({ Userdata: dataset });
-                                });
+                            self.m_Cryptor.Decrypt(msg.MasterPassword, dataset);
+                            if (dataset.Username.length === 0 || dataset.Password.length === 0)
+                                self.m_Port["popup"].postMessage({ Error: "Could not decrypt data." });
+                            else
+                                self.m_Port["filler"].postMessage({ Userdata: dataset });
                         });
                     else
                         self.m_Port["popup"].postMessage({ Error: "Wrong Master Password" });
