@@ -52,10 +52,12 @@ var OptionsManager = (function () {
                 var new_pw2 = $('#password-new-input2').val();
                 if (!old_pw || !new_pw || !new_pw2) {
                     $('#error-messages').text("Please fill in all fields!");
+                    $('#error-messages').show();
                     return;
                 }
                 else if (new_pw != new_pw2) {
                     $('#error-messages').text("New Password inputs dont match");
+                    $('#error-messages').show();
                     return;
                 }
             });
