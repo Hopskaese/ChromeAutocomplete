@@ -14,7 +14,7 @@
 				<a class="navbar-brand">Settings</a>
     	</div>
 			<ul class="nav navbar-nav">
-				<li><a href="#">Change Masterpassword</a></li>
+				<li><a href="#" id="change-masterpassword-link">Change Masterpassword</a></li>
 				<li><a href="#">Change Infos</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
@@ -25,11 +25,11 @@
 			</ul>
 		</div>
 	</nav>
-	<section class="container" id="authentication">
-		<article class="alert alert-danger" role="alert" id="error-messages">
-    	<p><strong>Error!</strong></p><p id="error-message">Wrong Master Password</p>
+	<section class="container">
+	 <article class="alert alert-danger" role="alert" id="error-messages">
+    	<p><strong>Error!</strong></p><p id="error-message"></p>
      </article>
-		<article class="row">
+		<article class="row" id="authentication">
 			<div class="col-md-4 col-md-offset-4">
         <div class="panel panel-default">
           <div class="panel-body">
@@ -40,15 +40,37 @@
           		<div class="panel-body">
           			<div class="form-group">
           				<input id="master-password-input" type="password" placeholder="Password" class="form-control">
+          			</div>
           			<div class="form-group">
           				<input class="btn btn-lg btn-primary btn-block" value="Authenticate" id="btn-authenticate">
-          			</div>
           			</div>
           		</div>
           	</div>
         	</div>
       	</div>
       </div>
+		</article>
+		<article class="row" id="change-masterpassword">
+			<div class="col-md-4 col-md-offset-4">
+        		<div class="panel panel-default">
+          			<div class="panel-body">
+          				<div class="text-center">
+          					<h4 class="text-center">Change Master-Password</h4>
+          			<div class="panel-body">
+          				<div class="form-group">
+          					<label for="new_pw1">New Master-Password</label>
+          					<input id="password-new-input" type="password" placeholder="Password" class="form-control">
+          				</div>
+          				<div class="form-group">
+          					<label for="new_pw2">Repeat</label>
+          					<input id="password-new-input2" type="password" class="form-control">
+          				</div>
+          					<input class="btn btn-lg btn-primary btn-block" value="Change" id="btn-change">
+          			</div>
+          				</div>
+          			</div>
+        		</div>
+      		</div>
 		</article>
 	</section>
 	<section class="container" id="data-table">

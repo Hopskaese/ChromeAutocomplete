@@ -14,6 +14,7 @@ var OptionsMessenger = (function () {
                     self.m_Manager.SetupAuthenticated();
                 }
                 else {
+                    $('#error-messages').text("Wrong Master-Password!");
                     self.m_Manager.ShowElement("error-messages");
                 }
             }
@@ -37,12 +38,24 @@ var OptionsManager = (function () {
         $(document).ready(function () {
             $('#error-messages').hide();
             $('#data-table').hide();
+            $('#change-masterpassword').hide();
             $('#auth-yes').hide();
             $('#unlocked').hide();
             $('#btn-authenticate').on("click", function () {
                 var password = document.getElementById("master-password-input").value;
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
+            });
+            $('#change-masterpassword-link').on("click", function () {
+                if (self.m_isAuthenticated) {
+                    $('#data-table').fadeOut(1500, function () {
+                        $('#change-masterpassword').show();
+                    });
+                }
+                else {
+                    $('#error-messages').text("Please authenticate first!");
+                    $('#error-messages').show();
+                }
             });
             $(document).keyup(function (event) {
                 if (event.keyCode == 13) {
@@ -58,10 +71,11 @@ var OptionsManager = (function () {
         $("#" + id).hide();
     };
     OptionsManager.prototype.SetupAuthenticated = function () {
+        this.m_isAuthenticated = true;
         $('#error-messages').hide();
         $('#locked').hide();
         $('#unlocked').show();
-        $('.panel').fadeOut(1500, function () {
+        $('#authentication').fadeOut(1500, function () {
             $('#data-table').show();
         });
         $('#auth-no').hide();

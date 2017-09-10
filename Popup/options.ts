@@ -21,6 +21,7 @@ class OptionsMessenger {
     		}
     		else
     		{
+    			$('#error-messages').text("Wrong Master-Password!");
     			self.m_Manager.ShowElement("error-messages");
     		}
     	}
@@ -37,6 +38,7 @@ class OptionsMessenger {
 
 class OptionsManager {
 	private m_Messenger:OptionsMessenger;
+	private m_isAuthenticated:boolean;
 	constructor() {
 		this.m_Messenger = new OptionsMessenger(this);
 		this.InitListeners();
@@ -46,6 +48,7 @@ class OptionsManager {
 		$(document).ready(function() {
 			$('#error-messages').hide();
 			$('#data-table').hide();
+			$('#change-masterpassword').hide();
 			$('#auth-yes').hide();
 			$('#unlocked').hide();
 
@@ -53,6 +56,19 @@ class OptionsManager {
 				let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
         		if (password)
           			self.m_Messenger.PostMessage({MasterPassword: password});
+			});
+			$('#change-masterpassword-link').on("click", function() {
+				if (self.m_isAuthenticated) 
+				{
+					$('#data-table').fadeOut(1500, function() {
+						$('#change-masterpassword').show();
+					});
+				}
+				else 
+				{
+					$('#error-messages').text("Please authenticate first!");
+					$('#error-messages').show();	
+				}
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
@@ -68,10 +84,11 @@ class OptionsManager {
 		$("#"+id).hide();
 	}
 	SetupAuthenticated():void {
+		this.m_isAuthenticated = true;
 		$('#error-messages').hide();
 		$('#locked').hide();
 		$('#unlocked').show();
-		$('.panel').fadeOut(1500, function() {
+		$('#authentication').fadeOut(1500, function() {
 			$('#data-table').show();
 		});
 		$('#auth-no').hide();
