@@ -46,16 +46,26 @@ var OptionsManager = (function () {
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
             });
+            $('#btn-change').on("click", function () {
+                var old_pw = $('#password-old-input').val();
+                var new_pw = $('#password-new-input').val();
+                var new_pw2 = $('#password-new-input2').val();
+                if (!old_pw || !new_pw || !new_pw2) {
+                    $('#error-messages').text("Please fill in all fields!");
+                    return;
+                }
+                else if (new_pw != new_pw2) {
+                    $('#error-messages').text("New Password inputs dont match");
+                    return;
+                }
+            });
             $('#change-masterpassword-link').on("click", function () {
-                if (self.m_isAuthenticated) {
-                    $('#data-table').fadeOut(1500, function () {
-                        $('#change-masterpassword').show();
-                    });
-                }
-                else {
-                    $('#error-messages').text("Please authenticate first!");
-                    $('#error-messages').show();
-                }
+                $('#data-table').fadeOut(1500, function () {
+                    $('#authentication').is(":visible") ?
+                        $('#authentication').fadeOut(1500, function () { $('#change-masterpassword').show(); }) :
+                        $('#data-table').fadeOut(1500, function () { $('#change-masterpassword').show(); });
+                    $('#change-masterpassword').show();
+                });
             });
             $(document).keyup(function (event) {
                 if (event.keyCode == 13) {
@@ -71,7 +81,6 @@ var OptionsManager = (function () {
         $("#" + id).hide();
     };
     OptionsManager.prototype.SetupAuthenticated = function () {
-        this.m_isAuthenticated = true;
         $('#error-messages').hide();
         $('#locked').hide();
         $('#unlocked').show();
