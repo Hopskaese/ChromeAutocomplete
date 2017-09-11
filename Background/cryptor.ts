@@ -33,7 +33,8 @@ class Cryptor {
 		this.m_Salt = salt;
 	}
 
-	Encrypt(username:string, password:string , masterpassword:string, callback:(encrypted_Username:string, encrypted_Password:string)=>void):void {
+	Encrypt(username:string, password:string , masterpassword:string):void 
+	{
 		
 		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
 		{
@@ -52,13 +53,14 @@ class Cryptor {
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
+		username = username.toString();
 
 		password = CryptoJS.AES.encrypt(password, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
-		callback(username.toString(), password.toString());
+		password = password.toString();
 	}
 
 	Decrypt(password:string, dataset:any):void {

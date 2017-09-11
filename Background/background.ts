@@ -83,6 +83,34 @@ class ServerMessenger {
 					}
 				});
 			}
+			else if (msg.ChangeMasterPassword)
+			{
+			 	let old_pw = msg.ChangeMasterPassword.old_pw;
+			 	let hashed_old = self.m_Cryptor.Hash(old_pw);
+			 	let new_pw = msg.ChangeMasterPassword.new_pw;
+			 	let hashed_new = self.m_Cryptor.Hash(new_pw);
+			 	self.m_Model.GetMainData(function(dataset:any) {
+			 		if (dataset.MainData.Hash === hashed_old) 
+			 		{
+			 			self.m_Model.GetAllUserData(function(dataset:any) {
+			 				for (let obj in dataset)
+			 				{
+			 					self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
+			 					self.m_Cryptor.Encrypt(new_pw, dataset[obj].Username, dataset[obj].Password);
+			 					self.m_Model.DeleteRecord(obj);
+			 					self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+			 				}
+			 			});
+
+			 			self.m_Model.DeleteRecord("MainData");
+			 			self.m_Model.SaveMainData(hashed_new, dataset.MainData.Iv, dataset.MainData.Salt);
+			 		}
+			 		else
+			 		{
+			 			self.m_Port["options"].postMessage({Error: "Wrong Master-Password"});
+			 		}
+			 	});
+			}
 		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {
@@ -100,9 +128,8 @@ class ServerMessenger {
 			if (msg.NewUserInfo && self.m_Domain)
 			{
 				let user = msg.NewUserInfo;
-				self.m_Cryptor.Encrypt(user.Username, user.Password, user.MasterPassword, function(encrypted_Username, encrypted_Password) {
-					self.m_Model.SaveUserData(self.m_Domain, encrypted_Username, encrypted_Password);
-				});
+				self.m_Cryptor.Encrypt(user.Username, user.Password, user.MasterPassword);
+				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
 			}
 			else if (msg.MasterPasswordSetup)
 			{

@@ -62,6 +62,28 @@ var ServerMessenger = (function () {
                     }
                 });
             }
+            else if (msg.ChangeMasterPassword) {
+                var old_pw_1 = msg.ChangeMasterPassword.old_pw;
+                var hashed_old_1 = self.m_Cryptor.Hash(old_pw_1);
+                var new_pw_1 = msg.ChangeMasterPassword.new_pw;
+                var hashed_new_1 = self.m_Cryptor.Hash(new_pw_1);
+                self.m_Model.GetMainData(function (dataset) {
+                    if (dataset.MainData.Hash === hashed_old_1) {
+                        self.m_Model.GetAllUserData(function (dataset) {
+                            for (var obj in dataset) {
+                                self.m_Cryptor.Decrypt(old_pw_1, dataset[obj]);
+                                self.m_Cryptor.Encrypt(new_pw_1, dataset[obj].Username, dataset[obj].Password);
+                                self.m_Model.DeleteRecord(obj);
+                                self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+                            }
+                        });
+                        self.m_Model.DeleteRecord("MainData");
+                        self.m_Model.SaveMainData(hashed_new_1, dataset.MainData.Iv, dataset.MainData.Salt);
+                    }
+                    else {
+                    }
+                });
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
@@ -77,9 +99,8 @@ var ServerMessenger = (function () {
         port.onMessage.addListener(function (msg) {
             if (msg.NewUserInfo && self.m_Domain) {
                 var user = msg.NewUserInfo;
-                self.m_Cryptor.Encrypt(user.Username, user.Password, user.MasterPassword, function (encrypted_Username, encrypted_Password) {
-                    self.m_Model.SaveUserData(self.m_Domain, encrypted_Username, encrypted_Password);
-                });
+                self.m_Cryptor.Encrypt(user.Username, user.Password, user.MasterPassword);
+                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {

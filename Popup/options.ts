@@ -29,6 +29,11 @@ class OptionsMessenger {
     	{
     		self.m_Manager.SetupUserData(msg.UserData);
     	}
+    	else if (msg.Error)
+    	{
+    		$('#error-messages').text(msg.Error);
+    		self.m_Manager.ShowElement("error-messages");
+    	}
     });
   }
   PostMessage(input:object):void {
@@ -65,13 +70,15 @@ class OptionsManager {
 				{
 					$('#error-messages').text("Please fill in all fields!");
 					$('#error-messages').show();
-					return;
 				}
 				else if (new_pw != new_pw2)
 				{
 					$('#error-messages').text("New Password inputs dont match");
 					$('#error-messages').show();
-					return;
+				}
+				else 
+				{
+					self.m_Messenger.PostMessage({ChangeMasterPassword: {OldPassword: old_pw, NewPassword: new_pw}});
 				}
 
 			});

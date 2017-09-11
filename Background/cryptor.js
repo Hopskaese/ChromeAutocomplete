@@ -19,7 +19,7 @@ var Cryptor = (function () {
         this.m_Iv = iv;
         this.m_Salt = salt;
     };
-    Cryptor.prototype.Encrypt = function (username, password, masterpassword, callback) {
+    Cryptor.prototype.Encrypt = function (username, password, masterpassword) {
         if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0) {
             console.log("Salt or Iv error");
             return;
@@ -34,12 +34,13 @@ var Cryptor = (function () {
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
+        username = username.toString();
         password = CryptoJS.AES.encrypt(password, key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        callback(username.toString(), password.toString());
+        password = password.toString();
     };
     Cryptor.prototype.Decrypt = function (password, dataset) {
         var key = CryptoJS.PBKDF2(password, this.m_Salt, {

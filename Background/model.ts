@@ -11,6 +11,11 @@ class Model {
 				console.log("Last error" + lasterror.message);
 		});
 	}
+	DeleteRecord(domain:string):void {
+		chrome.storage.local.remove([domain], function() {
+			console.log("key has been deleted");
+		});
+	}
 	GetAllUserData(callback:(data:object)=>any): void {
 		chrome.storage.local.get(null, function(dataset:any) {
 			let lasterror = chrome.runtime.lastError;

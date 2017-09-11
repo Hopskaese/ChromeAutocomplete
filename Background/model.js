@@ -12,6 +12,11 @@ var Model = (function () {
         });
         var _a;
     };
+    Model.prototype.DeleteRecord = function (domain) {
+        chrome.storage.local.remove([domain], function () {
+            console.log("key has been deleted");
+        });
+    };
     Model.prototype.GetAllUserData = function (callback) {
         chrome.storage.local.get(null, function (dataset) {
             var lasterror = chrome.runtime.lastError;
