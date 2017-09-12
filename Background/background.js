@@ -71,21 +71,14 @@ var ServerMessenger = (function () {
                         var salt_old_1 = dataset.MainData.Salt;
                         var iv_old_1 = dataset.MainData.Iv;
                         self.m_Cryptor.MainSetup(new_pw_1, function (hashed_pw, salt, iv) {
-                            self.m_Model.DeleteRecord("MainData", function () {
-                                self.m_Model.SaveMainData(hashed_pw, salt, iv);
-                            });
+                            self.m_Model.SaveMainData(hashed_pw, salt, iv);
                             self.m_Model.GetAllUserData(function (dataset) {
-                                var _loop_1 = function (obj) {
+                                for (var obj in dataset) {
                                     self.m_Cryptor.SetSaltAndIv(salt_old_1, iv_old_1);
                                     self.m_Cryptor.Decrypt(old_pw_1, dataset[obj]);
                                     self.m_Cryptor.SetSaltAndIv(salt, iv);
                                     self.m_Cryptor.Encrypt(new_pw_1, dataset[obj]);
-                                    self.m_Model.DeleteRecord(obj, function () {
-                                        self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
-                                    });
-                                };
-                                for (var obj in dataset) {
-                                    _loop_1(obj);
+                                    self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
                                 }
                             });
                         });

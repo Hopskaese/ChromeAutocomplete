@@ -24,7 +24,7 @@ var Cryptor = (function () {
             console.log("Salt or Iv error");
             return;
         }
-        //256 bit key
+        //256 bit key, not necessary
         var key = CryptoJS.PBKDF2(masterpassword, this.m_Salt, {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations

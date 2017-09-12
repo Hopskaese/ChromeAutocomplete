@@ -18,7 +18,7 @@ class ServerMessenger {
 	}
 	InitListeners():void {
 		var self = this;
-		chrome.runtime.onConnect.addListener(function(port) {
+		chrome.runtime.onConnect.addListener(function(port:chrome.runtime.Port) {
 			self.m_Port[port.name] = port;
 
 			if (port.name == "filler")
@@ -94,20 +94,16 @@ class ServerMessenger {
 			 			let salt_old = dataset.MainData.Salt;
 			 			let iv_old = dataset.MainData.Iv;
 			 			self.m_Cryptor.MainSetup(new_pw, function(hashed_pw:string, salt:string, iv:string) {
-			 				self.m_Model.DeleteRecord("MainData", function() {
-			 				self.m_Model.SaveMainData(hashed_pw, salt, iv);
-			 				});
-			 				self.m_Model.GetAllUserData(function(dataset:any) {
+			 					self.m_Model.SaveMainData(hashed_pw, salt, iv);
+			 					self.m_Model.GetAllUserData(function(dataset:any) {
 			 					for (let obj in dataset)
 			 					{
 			 						self.m_Cryptor.SetSaltAndIv(salt_old, iv_old);
 			 						self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
 			 						self.m_Cryptor.SetSaltAndIv(salt, iv);
 			 						self.m_Cryptor.Encrypt(new_pw, dataset[obj]);
-			 						self.m_Model.DeleteRecord(obj, function() {
 			 						self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
-			 					});
-			 				}
+			 					}
 			 				});
 			 			});
 			 		}

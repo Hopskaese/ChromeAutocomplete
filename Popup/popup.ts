@@ -1,4 +1,5 @@
 /// <reference path="../Include/index.d.ts"/>
+/// <reference path="../Include/index2.d.ts"/>
 
 class ClientMessenger {
   m_Port:chrome.runtime.Port;
@@ -39,38 +40,40 @@ class PopupManager {
   }
   InitListeners():void {
     let self = this;
-    window.addEventListener("load", function() {
-      document.getElementById("post-info").addEventListener("click", function() {
-        let username = (<HTMLInputElement>document.getElementById("username-input")).value;
-        let password = (<HTMLInputElement>document.getElementById("password-input")).value;
+    $(window).on("load", function() {
+      $("#post-info").on("click", function() {
+        let username = $("#username-input").val();
+        let password = $("#password-input").val();
 
         if (username && password)
           self.m_Messenger.PostMessage({NewUserInfo: {Username: username, Password: password, MasterPassword: self.m_Password}});
           self.m_Password = "";
       });
-      document.getElementById("b-setup").addEventListener("click", function() {
-        self.m_Password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
-        self.DisplayElement("new-credentials");
-        self.HideElement("master-password");
+      $("#b-setup").on("click", function() {
+        self.m_Password = $("#master-password-input").val();
+        $("#new-credentials").show();
+        $("#master-password").hide();
       });  
-      document.getElementById("b-login").addEventListener("click", function() {
-        let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
+      $("#b-login").on("click", function() {
+        let password = $("#master-password-input").val();
          if (password)
            self.m_Messenger.PostMessage({MasterPassword: password});
       });
-      document.getElementById("post-set-master-password").addEventListener("click", function() {
-        let password = (<HTMLInputElement>document.getElementById("set-master-password-input")).value;
+      $("#post-set-master-password").on("click", function() {
+        let password = $("#set-master-password-input").val();
         if (password)
           self.m_Messenger.PostMessage({MasterPasswordSetup : password});
       });
     });
   }
   SetLayout(doesExist:boolean):void {
-    document.getElementById("set-master-password").style.display = "none";
-    document.getElementById("error-messages").style.display = "none";
-    document.getElementById("master-password").style.display = "block";
-    document.getElementById("b-login").style.display = doesExist ? "block" : "none";
-    document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+    $("#set-master-password").hide();
+    $("#error-messages").hide();
+    $("#master-password").show();
+    //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
+    //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+    doesExist ? $("#b-login").show() : $('#b-login').hide();
+    doesExist ? $("#b-setup").hide() : $('#b-setup').show();
 
     let message:string = "";
     if (doesExist)
@@ -78,20 +81,17 @@ class PopupManager {
     else
         message = "Please enter your MasterPassword so we can set up your data";
 
-    let header = <HTMLInputElement>document.getElementById("master-password-message");
-    header.innerHTML = message;
+    $("#master-password-message").text(message);
   }
   DisplayError(message:string):void {
-    let element = <HTMLInputElement>document.getElementById("error-messages");
-    let paragraph = <HTMLInputElement>document.getElementById("error-message");
-    paragraph.innerHTML = message;
-    element.style.display = "block";
+    $('#error-messages').text(message);
+    $('#error-messages').show();
   }
   DisplayElement(id:string):void {
-    document.getElementById(id).style.display = "block";
+    $('#'+id).show();
   }
   HideElement(id:string):void {
-    document.getElementById(id).style.display = "none";
+    $('#'+id).hide();
   }
 }
 

@@ -6,8 +6,8 @@ class OptionsMessenger {
   private m_Manager:OptionsManager;
 
 	constructor(manager:OptionsManager) {
-    this.m_Manager = manager;
-    this.InitListeners();
+    	this.m_Manager = manager;
+    	this.InitListeners();
   }
   InitListeners():void {
     this.m_Port = chrome.runtime.connect({name:"options"});
@@ -21,8 +21,7 @@ class OptionsMessenger {
     		}
     		else
     		{
-    			$('#error-messages').text("Wrong Master-Password!");
-    			self.m_Manager.ShowElement("error-messages");
+    			self.m_Manager.SetError("Wrong Master-Password!");
     		}
     	}
     	else if (msg.UserData)
@@ -31,8 +30,7 @@ class OptionsMessenger {
     	}
     	else if (msg.Error)
     	{
-    		$('#error-messages').text(msg.Error);
-    		self.m_Manager.ShowElement("error-messages");
+    		self.m_Manager.SetError(msg.Error);
     	}
     });
   }
@@ -68,13 +66,11 @@ class OptionsManager {
 				let new_pw2 = $('#password-new-input2').val();
 				if (!old_pw || !new_pw || !new_pw2)
 				{
-					$('#error-messages').text("Please fill in all fields!");
-					$('#error-messages').show();
+					self.SetError("Please fill in all fields!");
 				}
 				else if (new_pw != new_pw2)
 				{
-					$('#error-messages').text("New Password inputs dont match");
-					$('#error-messages').show();
+					self.SetError("New Password inputs don't match!");
 				}
 				else 
 				{
@@ -97,11 +93,9 @@ class OptionsManager {
 			});
 		});
 	}
-	ShowElement(id:string):void {
-		$("#"+id).show();
-	}
-	HideElement(id:string):void {
-		$("#"+id).hide();
+	SetError(error:string):void {
+		$('#error-messages').text(error);
+		$('#error-messages').show();
 	}
 	SetupAuthenticated():void {
 		$('#error-messages').hide();
@@ -115,7 +109,6 @@ class OptionsManager {
 	}
 	SetupUserData(dataset:any)
 	{
-		console.info(dataset);
 		let cnt = 0;
 		for (let obj in dataset) 
 		{

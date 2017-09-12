@@ -1,4 +1,5 @@
 /// <reference path="../Include/index.d.ts"/>
+/// <reference path="../Include/index2.d.ts"/>
 var ClientMessenger = (function () {
     function ClientMessenger(manager) {
         this.m_Manager = manager;
@@ -31,56 +32,55 @@ var PopupManager = (function () {
     }
     PopupManager.prototype.InitListeners = function () {
         var self = this;
-        window.addEventListener("load", function () {
-            document.getElementById("post-info").addEventListener("click", function () {
-                var username = document.getElementById("username-input").value;
-                var password = document.getElementById("password-input").value;
+        $(window).on("load", function () {
+            $("#post-info").on("click", function () {
+                var username = $("#username-input").val();
+                var password = $("#password-input").val();
                 if (username && password)
                     self.m_Messenger.PostMessage({ NewUserInfo: { Username: username, Password: password, MasterPassword: self.m_Password } });
                 self.m_Password = "";
             });
-            document.getElementById("b-setup").addEventListener("click", function () {
-                self.m_Password = document.getElementById("master-password-input").value;
-                self.DisplayElement("new-credentials");
-                self.HideElement("master-password");
+            $("#b-setup").on("click", function () {
+                self.m_Password = $("#master-password-input").val();
+                $("#new-credentials").show();
+                $("#master-password").hide();
             });
-            document.getElementById("b-login").addEventListener("click", function () {
-                var password = document.getElementById("master-password-input").value;
+            $("#b-login").on("click", function () {
+                var password = $("#master-password-input").val();
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
             });
-            document.getElementById("post-set-master-password").addEventListener("click", function () {
-                var password = document.getElementById("set-master-password-input").value;
+            $("#post-set-master-password").on("click", function () {
+                var password = $("#set-master-password-input").val();
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPasswordSetup: password });
             });
         });
     };
     PopupManager.prototype.SetLayout = function (doesExist) {
-        document.getElementById("set-master-password").style.display = "none";
-        document.getElementById("error-messages").style.display = "none";
-        document.getElementById("master-password").style.display = "block";
-        document.getElementById("b-login").style.display = doesExist ? "block" : "none";
-        document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+        $("#set-master-password").hide();
+        $("#error-messages").hide();
+        $("#master-password").show();
+        //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
+        //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+        doesExist ? $("#b-login").show() : $('#b-login').hide();
+        doesExist ? $("#b-setup").hide() : $('#b-setup').show();
         var message = "";
         if (doesExist)
             message = "Please enter your MasterPassword so we can log you in";
         else
             message = "Please enter your MasterPassword so we can set up your data";
-        var header = document.getElementById("master-password-message");
-        header.innerHTML = message;
+        $("#master-password-message").text(message);
     };
     PopupManager.prototype.DisplayError = function (message) {
-        var element = document.getElementById("error-messages");
-        var paragraph = document.getElementById("error-message");
-        paragraph.innerHTML = message;
-        element.style.display = "block";
+        $('#error-messages').text(message);
+        $('#error-messages').show();
     };
     PopupManager.prototype.DisplayElement = function (id) {
-        document.getElementById(id).style.display = "block";
+        $('#' + id).show();
     };
     PopupManager.prototype.HideElement = function (id) {
-        document.getElementById(id).style.display = "none";
+        $('#' + id).hide();
     };
     return PopupManager;
 }());

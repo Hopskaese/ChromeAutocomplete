@@ -4,8 +4,8 @@ declare var CryptoJS:any;
 //https://jsperf.com/crypto-js-pbkdf2-sha512
 //https://stackoverflow.com/questions/20519166/cant-decrypt-string-with-cryptojs
 class Cryptor {
-	private m_KeySize :number;
-	private m_IvSize :number;
+	private m_KeySize: number;
+	private m_IvSize: number;
 	private m_Iterations: number;
 	private m_Iv: string;
 	private m_Salt: string;
@@ -42,7 +42,7 @@ class Cryptor {
 			return;
 		}
 		
-		//256 bit key
+		//256 bit key, not necessary
 		let key = CryptoJS.PBKDF2(masterpassword, this.m_Salt, {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations
