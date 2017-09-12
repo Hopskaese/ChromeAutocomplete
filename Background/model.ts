@@ -10,10 +10,18 @@ class Model {
 			if (lasterror)
 				console.log("Last error" + lasterror.message);
 		});
+		console.log("Userdata has been saved");
 	}
-	DeleteRecord(domain:string):void {
+	DeleteRecord(domain:string, callback:()=>any):void {
 		chrome.storage.local.remove([domain], function() {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+			{
+				console.log("Error deleting record" + lasterror.message);
+				return;
+			}
 			console.log("key has been deleted");
+			callback();
 		});
 	}
 	GetAllUserData(callback:(data:object)=>any): void {
@@ -33,7 +41,6 @@ class Model {
 				if (key == "MainData")
 					delete dataset[key];
 
-			console.info(dataset);
 			callback(dataset);
 		});
 	}
@@ -46,11 +53,13 @@ class Model {
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
+				callback(null);
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
+				callback(null);
 				return;
 			}
 			console.log("Found record. Returning");

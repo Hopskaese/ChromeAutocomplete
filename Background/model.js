@@ -10,11 +10,18 @@ var Model = (function () {
             if (lasterror)
                 console.log("Last error" + lasterror.message);
         });
+        console.log("Userdata has been saved");
         var _a;
     };
-    Model.prototype.DeleteRecord = function (domain) {
+    Model.prototype.DeleteRecord = function (domain, callback) {
         chrome.storage.local.remove([domain], function () {
+            var lasterror = chrome.runtime.lastError;
+            if (lasterror) {
+                console.log("Error deleting record" + lasterror.message);
+                return;
+            }
             console.log("key has been deleted");
+            callback();
         });
     };
     Model.prototype.GetAllUserData = function (callback) {
@@ -31,7 +38,6 @@ var Model = (function () {
             for (var key in dataset)
                 if (key == "MainData")
                     delete dataset[key];
-            console.info(dataset);
             callback(dataset);
         });
     };
@@ -43,10 +49,12 @@ var Model = (function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
+                callback(null);
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
+                callback(null);
                 return;
             }
             console.log("Found record. Returning");

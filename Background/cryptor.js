@@ -14,12 +14,12 @@ var Cryptor = (function () {
         var hashed_pw = CryptoJS.SHA256(masterpassword);
         callback(hashed_pw.toString(), salt.toString(), iv.toString());
     };
-    Cryptor.prototype.SetIvAndSalt = function (iv, salt) {
+    Cryptor.prototype.SetSaltAndIv = function (salt, iv) {
         console.log("iv and salt being set: " + iv);
         this.m_Iv = iv;
         this.m_Salt = salt;
     };
-    Cryptor.prototype.Encrypt = function (username, password, masterpassword) {
+    Cryptor.prototype.Encrypt = function (masterpassword, dataset) {
         if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0) {
             console.log("Salt or Iv error");
             return;
@@ -29,18 +29,18 @@ var Cryptor = (function () {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations
         });
-        username = CryptoJS.AES.encrypt(username, key.toString(), {
+        dataset.Username = CryptoJS.AES.encrypt(dataset.Username, key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        username = username.toString();
-        password = CryptoJS.AES.encrypt(password, key.toString(), {
+        dataset.Username = dataset.Username.toString();
+        dataset.Password = CryptoJS.AES.encrypt(dataset.Password, key.toString(), {
             iv: this.m_Iv,
             padding: CryptoJS.pad.Pkcs7,
             mode: CryptoJS.mode.CBC
         });
-        password = password.toString();
+        dataset.Password = dataset.Password.toString();
     };
     Cryptor.prototype.Decrypt = function (password, dataset) {
         var key = CryptoJS.PBKDF2(password, this.m_Salt, {

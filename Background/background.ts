@@ -38,7 +38,7 @@ class ServerMessenger {
 					}
 					else 
 					{
-						self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
+						self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
 						let doesExist = false;
 						if (self.m_Domain)
 						{
@@ -68,7 +68,7 @@ class ServerMessenger {
 				self.m_Model.GetMainData(function(dataset:any) {
 					if (dataset.MainData.Hash == hashed_pw)
 					{
-						self.m_Cryptor.SetIvAndSalt(dataset.MainData.Salt, dataset.MainData.Iv);
+						self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
 						self.m_Port["options"].postMessage({Authenticated : {val : true}});
 						self.m_Model.GetAllUserData(function(dataset:any) {
 							for (let obj in dataset)
@@ -85,25 +85,31 @@ class ServerMessenger {
 			}
 			else if (msg.ChangeMasterPassword)
 			{
-			 	let old_pw = msg.ChangeMasterPassword.old_pw;
+			 	let old_pw = msg.ChangeMasterPassword.OldPassword;
 			 	let hashed_old = self.m_Cryptor.Hash(old_pw);
-			 	let new_pw = msg.ChangeMasterPassword.new_pw;
-			 	let hashed_new = self.m_Cryptor.Hash(new_pw);
+			 	let new_pw = msg.ChangeMasterPassword.NewPassword;
 			 	self.m_Model.GetMainData(function(dataset:any) {
 			 		if (dataset.MainData.Hash === hashed_old) 
 			 		{
-			 			self.m_Model.GetAllUserData(function(dataset:any) {
-			 				for (let obj in dataset)
-			 				{
-			 					self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
-			 					self.m_Cryptor.Encrypt(new_pw, dataset[obj].Username, dataset[obj].Password);
-			 					self.m_Model.DeleteRecord(obj);
-			 					self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+			 			let salt_old = dataset.MainData.Salt;
+			 			let iv_old = dataset.MainData.Iv;
+			 			self.m_Cryptor.MainSetup(new_pw, function(hashed_pw:string, salt:string, iv:string) {
+			 				self.m_Model.DeleteRecord("MainData", function() {
+			 				self.m_Model.SaveMainData(hashed_pw, salt, iv);
+			 				});
+			 				self.m_Model.GetAllUserData(function(dataset:any) {
+			 					for (let obj in dataset)
+			 					{
+			 						self.m_Cryptor.SetSaltAndIv(salt_old, iv_old);
+			 						self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
+			 						self.m_Cryptor.SetSaltAndIv(salt, iv);
+			 						self.m_Cryptor.Encrypt(new_pw, dataset[obj]);
+			 						self.m_Model.DeleteRecord(obj, function() {
+			 						self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+			 					});
 			 				}
+			 				});
 			 			});
-
-			 			self.m_Model.DeleteRecord("MainData");
-			 			self.m_Model.SaveMainData(hashed_new, dataset.MainData.Iv, dataset.MainData.Salt);
 			 		}
 			 		else
 			 		{
@@ -127,8 +133,8 @@ class ServerMessenger {
 		port.onMessage.addListener(function(msg:any) {
 			if (msg.NewUserInfo && self.m_Domain)
 			{
-				let user = msg.NewUserInfo;
-				self.m_Cryptor.Encrypt(user.Username, user.Password, user.MasterPassword);
+				let user: {[k: string]: any} = {Username: msg.NewUserInfo.Username, Password: msg.NewUserInfo.Password};
+				self.m_Cryptor.Encrypt(msg.NewUserInfo.MasterPassword, user);
 				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
 			}
 			else if (msg.MasterPasswordSetup)

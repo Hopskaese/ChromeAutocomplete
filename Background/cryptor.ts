@@ -26,14 +26,14 @@ class Cryptor {
 		callback(hashed_pw.toString(), salt.toString(), iv.toString());
 	}
 
-	SetIvAndSalt(iv:string, salt:string)
+	SetSaltAndIv(salt:string, iv:string)
 	{
 		console.log("iv and salt being set: "+iv);
 		this.m_Iv = iv;
 		this.m_Salt = salt;
 	}
 
-	Encrypt(username:string, password:string , masterpassword:string):void 
+	Encrypt(masterpassword:string, dataset:any):void 
 	{
 		
 		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
@@ -48,19 +48,19 @@ class Cryptor {
 			iterations: this.m_Iterations
 		});
 	
-		username = CryptoJS.AES.encrypt(username, key.toString(), {
+		dataset.Username = CryptoJS.AES.encrypt(dataset.Username, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
-		username = username.toString();
+		dataset.Username = dataset.Username.toString();
 
-		password = CryptoJS.AES.encrypt(password, key.toString(), {
+		dataset.Password = CryptoJS.AES.encrypt(dataset.Password, key.toString(), {
 			iv: this.m_Iv,
 			padding: CryptoJS.pad.Pkcs7,
 			mode: CryptoJS.mode.CBC
 		});
-		password = password.toString();
+		dataset.Password = dataset.Password.toString();
 	}
 
 	Decrypt(password:string, dataset:any):void {
