@@ -9,3 +9,7 @@ body {
 #new-credentials, #master-password, #set-master-password, #error-messages {
 	display : none;
 }
+
+#master-password, #new-credentials {
+	margin-bottom:2%;
+}

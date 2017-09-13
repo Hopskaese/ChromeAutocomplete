@@ -67,9 +67,9 @@ var PopupManager = (function () {
         doesExist ? $("#b-setup").hide() : $('#b-setup').show();
         var message = "";
         if (doesExist)
-            message = "Please enter your MasterPassword so we can log you in";
+            message = "Please enter your MasterPassword to log in.";
         else
-            message = "Please enter your MasterPassword so we can set up your data";
+            message = "Please enter your MasterPassword to set up your data.";
         $("#master-password-message").text(message);
     };
     PopupManager.prototype.DisplayError = function (message) {

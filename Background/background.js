@@ -102,6 +102,7 @@ var ServerMessenger = (function () {
         var self = this;
         port.onMessage.addListener(function (msg) {
             if (msg.NewUserInfo && self.m_Domain) {
+                self.m_Port["filler"].postMessage({ Userdata: msg.NewUserInfo });
                 var user = { Username: msg.NewUserInfo.Username, Password: msg.NewUserInfo.Password };
                 self.m_Cryptor.Encrypt(msg.NewUserInfo.MasterPassword, user);
                 self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);

@@ -14,31 +14,34 @@
         <p><strong>Error!</strong></p><p id="error-message">Wrong Master Password</p>
       </article>
       <article id="new-credentials">
+        <h4>Please enter your Infos.</h4>
+        <hr/>
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">Email/Username</label>
           <input type="text" class="form-control" id="username-input">
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="text" class="form-control" id="password-input">
+          <input type="password" class="form-control" id="password-input">
         </div>
-        <button type="button" class="btn-danger" id="post-info">Save</button>
+        <button type="button" class="btn btn-sm btn-primary btn-block" id="post-info">Save</button>
       </article>
       <article id="master-password">
         <h4 id="master-password-message"></h4>
+        <hr/>
         <div class="form-group">
           <label for="master-password">Master Password</label>
           <input type="password" class="form-control" id="master-password-input">
         </div> 
-        <button type="button" class="btn-danger" id="b-login">Authenticate</button>
-        <button type="button" class="btn-danger" id="b-setup">Setup Info</button>
+        <button type="button" class="btn btn-sm btn-primary btn-block" id="b-login">Authenticate</button>
+        <button type="button" class="btn btn-sm btn-primary btn-block" id="b-setup">Setup Info</button>
       </article>
       <article id="set-master-password">
         <div class="form-group">
         <label for="master-password">Welcome! Please set ur master password before starting.</label>
           <input type="password" class="form-control" id="set-master-password-input">
         </div> 
-        <button type="button" class="btn-danger" id="post-set-master-password">Save</button>
+        <button type="button" class="btn btn-sm btn-primary btn-block" id="post-set-master-password">Save</button>
       </article>
     </section>
   </body>
