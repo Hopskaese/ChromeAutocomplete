@@ -113,6 +113,16 @@ class ServerMessenger {
 			 		}
 			 	});
 			}
+			else if (msg.ChangeUserData)
+			{
+				let domain 		 = msg.ChangeUserData.Domain;
+				let masterpassword = msg.ChangeUserData.MasterPassword;
+
+				let dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
+				self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password);
+
+				self.m_Port["options"].postMessage({Success: "Data for "+domain+" has been changed"});
+			}
 		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {

@@ -15,7 +15,7 @@
     	</div>
 			<ul class="nav navbar-nav">
 				<li><a href="#" id="change-masterpassword-link">Change Masterpassword</a></li>
-				<li><a href="#">Change Infos</a></li>
+				<li><a href="#" id="change-infos-link">Change Infos</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li><a id="auth-status">Authenticated: 
@@ -28,6 +28,9 @@
 	<section class="container">
 	 <article class="alert alert-danger" role="alert" id="error-messages">
     	<p><strong>Error!</strong></p><p id="error-message"></p>
+     </article>
+     <article class="alert alert-success" role="alert" id="success-messages">
+     	<p><strong>Success!</strong></p><p id="success-message"></p>
      </article>
 		<article class="row" id="authentication">
 			<div class="col-md-4 col-md-offset-4">
@@ -87,6 +90,7 @@
 					<th>Url</th>
 					<th>Username</th>
 					<th>Password</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>

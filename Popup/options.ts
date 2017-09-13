@@ -18,6 +18,7 @@ class OptionsMessenger {
     		if (msg.Authenticated.val) 
     		{
     			self.m_Manager.SetupAuthenticated();
+    			self.m_Manager.SetAuthenticated();
     		}
     		else
     		{
@@ -32,6 +33,10 @@ class OptionsMessenger {
     	{
     		self.m_Manager.SetError(msg.Error);
     	}
+    	else if (msg.Success)
+    	{
+    		self.m_Manager.SetSuccess(msg.Success);
+    	}
     });
   }
   PostMessage(input:object):void {
@@ -42,21 +47,26 @@ class OptionsMessenger {
 class OptionsManager {
 	private m_Messenger:OptionsMessenger;
 	private m_isAuthenticated:boolean;
+	private m_Password :string;
 	constructor() {
 		this.m_Messenger = new OptionsMessenger(this);
 		this.InitListeners();
+		this.m_isAuthenticated = false;
+		this.m_Password = "";
 	}
 	InitListeners():void {
 		let self = this;
 		$(document).ready(function() {
 			$('#error-messages').hide();
+			$('#success-messages').hide();
 			$('#data-table').hide();
 			$('#change-masterpassword').hide();
 			$('#auth-yes').hide();
 			$('#unlocked').hide();
 
 			$('#btn-authenticate').on("click", function() {
-				let password = (<HTMLInputElement>document.getElementById("master-password-input")).value;
+				let password = $("#master-password-input").val();
+				self.m_Password = password;
         		if (password)
           			self.m_Messenger.PostMessage({MasterPassword: password});
 			});
@@ -80,11 +90,32 @@ class OptionsManager {
 			});
 			$('#change-masterpassword-link').on("click", function() {
 				$('#data-table').fadeOut(1500, function() {
-					$('#authentication').is(":visible") ? 
-					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
-					$('#data-table').fadeOut(1500, function() {$('#change-masterpassword').show();});
+					self.m_isAuthenticated ? 
+					$('#data-table').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
+					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}); 
 					$('#change-masterpassword').show();
 				});
+			});
+			$('#data-table').on("click",'[id^=change]', function() {
+				let id:string = $(this).attr("id");
+				id = id.substr(6);
+				$(this).hide();
+				self.ChangeTdToTextInput(id);
+			});
+			$('#data-table').on("click", '[id^=save]', function() {
+				let id:string = $(this).attr("id");
+				id = id.substr(4);
+				let new_username = $('#td-input-username'+id).val();
+				let new_password = $('#td-input-password'+id).val();
+				let domain 		 = $('#td-domain'+id).text();
+
+				if (new_username.length > 0 && new_password.length > 0)
+					self.m_Messenger.PostMessage({ChangeUserData: {Domain: domain, 
+																   Username: new_username, 
+																   Password: new_password, 
+																   MasterPassword: self.m_Password}});
+				else
+					self.SetError("Input field cant be empty!");
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
@@ -93,9 +124,30 @@ class OptionsManager {
 			});
 		});
 	}
+	ChangeTdToTextInput(id:string):void {
+		let td_username = $('#td-username'+id);
+		let td_password = $('#td-password'+id);
+		let td_button 	= $('#td-button'+id);
+
+		let username:string = td_username.text();
+		td_username.text("");
+		let password:string = td_password.text();
+		td_password.text("");
+
+		td_username.append('<input type="text" id="td-input-username'+id+'" value="'+username+'">');
+		td_password.append('<input type="text" id="td-input-password'+id+'"value="'+password+'">');
+		td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save'+id+'">Save</button');
+	}
 	SetError(error:string):void {
-		$('#error-messages').text(error);
+		$('#error-message').text(error);
 		$('#error-messages').show();
+	}
+	SetSuccess(success:string):void {
+		$('#success-message').text(success);
+		$('#success-messages').show();
+	}
+	SetAuthenticated():void {
+		this.m_isAuthenticated = true;
 	}
 	SetupAuthenticated():void {
 		$('#error-messages').hide();
@@ -114,9 +166,10 @@ class OptionsManager {
 		{
 			$('tbody').append('<tr>\
       						   <th scope="row">'+cnt+'</th>\
-      						   <td>'+obj+'</td>\
-                               <td>'+dataset[obj].Username+'</td>\
-                               <td>'+dataset[obj].Password+'</td>\
+      						   <td id="td-domain'+cnt+'">'+obj+'</td>\
+                               <td id="td-username'+cnt+'">'+dataset[obj].Username+'</td>\
+                               <td id="td-password'+cnt+'">'+dataset[obj].Password+'</td>\
+                               <td id="td-button'+cnt+'"><button type="button" class="btn btn-sm btn-primary" id="change'+cnt+'">Change</button></td>\
                                </tr>');
 			cnt++;
 		}

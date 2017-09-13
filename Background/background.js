@@ -88,6 +88,13 @@ var ServerMessenger = (function () {
                     }
                 });
             }
+            else if (msg.ChangeUserData) {
+                var domain = msg.ChangeUserData.Domain;
+                var masterpassword = msg.ChangeUserData.MasterPassword;
+                var dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
+                self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password);
+                self.m_Port["options"].postMessage({ Success: "Data for " + domain + " has been changed" });
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
