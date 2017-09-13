@@ -117,11 +117,13 @@ class ServerMessenger {
 			{
 				let domain 		 = msg.ChangeUserData.Domain;
 				let masterpassword = msg.ChangeUserData.MasterPassword;
+				let id = msg.ChangeUserData.Id;
 
 				let dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
 				self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password);
 
 				self.m_Port["options"].postMessage({Success: "Data for "+domain+" has been changed"});
+				self.m_Port["options"].postMessage({ResetInput: {val : id}});
 			}
 		});
 	}

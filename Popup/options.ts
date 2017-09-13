@@ -37,6 +37,10 @@ class OptionsMessenger {
     	{
     		self.m_Manager.SetSuccess(msg.Success);
     	}
+    	else if (msg.ResetInput)
+    	{
+    		self.m_Manager.ChangeTextInputToTd(msg.ResetInput.val);
+    	}
     });
   }
   PostMessage(input:object):void {
@@ -113,7 +117,8 @@ class OptionsManager {
 					self.m_Messenger.PostMessage({ChangeUserData: {Domain: domain, 
 																   Username: new_username, 
 																   Password: new_password, 
-																   MasterPassword: self.m_Password}});
+																   MasterPassword: self.m_Password,
+																   Id: id}});
 				else
 					self.SetError("Input field cant be empty!");
 			});
@@ -138,13 +143,31 @@ class OptionsManager {
 		td_password.append('<input type="text" id="td-input-password'+id+'"value="'+password+'">');
 		td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save'+id+'">Save</button');
 	}
+	ChangeTextInputToTd(id:string):void {
+		let input_username = $('#td-input-username'+id);
+		let input_password = $('#td-input-password'+id);
+		let button = $('#save'+id);
+
+		let username = input_username.val();
+		let password = input_password.val();
+
+		input_username.remove();
+		input_password.remove();
+		button.remove();
+
+		$('#td-username'+id).text(username);
+		$('#td-password'+id).text(password);
+		$('#td-button'+id).append('<button type="button" class="btn btn-sm btn-primary" id="change'+id+'">Change</button>');
+	}
 	SetError(error:string):void {
 		$('#error-message').text(error);
 		$('#error-messages').show();
+		$('#error-messages').fadeOut(3000);
 	}
 	SetSuccess(success:string):void {
 		$('#success-message').text(success);
 		$('#success-messages').show();
+		$('#success-messages').fadeOut(3000);
 	}
 	SetAuthenticated():void {
 		this.m_isAuthenticated = true;

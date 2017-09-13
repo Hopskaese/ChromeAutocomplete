@@ -27,6 +27,9 @@ var OptionsMessenger = (function () {
             else if (msg.Success) {
                 self.m_Manager.SetSuccess(msg.Success);
             }
+            else if (msg.ResetInput) {
+                self.m_Manager.ChangeTextInputToTd(msg.ResetInput.val);
+            }
         });
     };
     OptionsMessenger.prototype.PostMessage = function (input) {
@@ -94,7 +97,8 @@ var OptionsManager = (function () {
                     self.m_Messenger.PostMessage({ ChangeUserData: { Domain: domain,
                             Username: new_username,
                             Password: new_password,
-                            MasterPassword: self.m_Password } });
+                            MasterPassword: self.m_Password,
+                            Id: id } });
                 else
                     self.SetError("Input field cant be empty!");
             });
@@ -117,13 +121,28 @@ var OptionsManager = (function () {
         td_password.append('<input type="text" id="td-input-password' + id + '"value="' + password + '">');
         td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save' + id + '">Save</button');
     };
+    OptionsManager.prototype.ChangeTextInputToTd = function (id) {
+        var input_username = $('#td-input-username' + id);
+        var input_password = $('#td-input-password' + id);
+        var button = $('#save' + id);
+        var username = input_username.val();
+        var password = input_password.val();
+        input_username.remove();
+        input_password.remove();
+        button.remove();
+        $('#td-username' + id).text(username);
+        $('#td-password' + id).text(password);
+        $('#td-button' + id).append('<button type="button" class="btn btn-sm btn-primary" id="change' + id + '">Change</button>');
+    };
     OptionsManager.prototype.SetError = function (error) {
         $('#error-message').text(error);
         $('#error-messages').show();
+        $('#error-messages').fadeOut(3000);
     };
     OptionsManager.prototype.SetSuccess = function (success) {
         $('#success-message').text(success);
         $('#success-messages').show();
+        $('#success-messages').fadeOut(3000);
     };
     OptionsManager.prototype.SetAuthenticated = function () {
         this.m_isAuthenticated = true;
