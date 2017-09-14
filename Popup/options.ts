@@ -120,7 +120,7 @@ class OptionsManager {
 																   MasterPassword: self.m_Password,
 																   Id: id}});
 				else
-					self.SetError("Input field cant be empty!");
+					self.SetError("Input fields cant be empty!");
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {

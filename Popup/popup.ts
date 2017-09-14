@@ -16,6 +16,10 @@ class ClientMessenger {
       {
         self.m_Manager.SetLayout(msg.DomainExists.val);
       }
+      else if (msg.NoFormFound)
+      {
+        self.m_Manager.SetNoFormFound();
+      }
       else if (msg.isNotSetup)
       {
          self.m_Manager.DisplayElement("set-master-password");
@@ -66,22 +70,25 @@ class PopupManager {
       });
     });
   }
+  SetNoFormFound()
+  {
+      $('#error-message').text("No Form found.");
+      $('#error-messages').show();
+  }
   SetLayout(doesExist:boolean):void {
-    $("#set-master-password").hide();
-    $("#error-messages").hide();
-    $("#master-password").show();
-    //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
-    //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
-    doesExist ? $("#b-login").show() : $('#b-login').hide();
-    doesExist ? $("#b-setup").hide() : $('#b-setup').show();
+      $('#master-password').show();
+        //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
+        //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
+      doesExist ? $("#b-login").show() : $('#b-login').hide();
+      doesExist ? $("#b-setup").hide() : $('#b-setup').show();
 
-    let message:string = "";
-    if (doesExist)
-        message = "Please enter your MasterPassword to log in.";
-    else
-        message = "Please enter your MasterPassword to set up your data.";
+      let message:string = "";
+      if (doesExist)
+          message = "Please enter your MasterPassword to log in.";
+      else
+          message = "Please enter your MasterPassword to set up your data.";
 
-    $("#master-password-message").text(message);
+      $("#master-password-message").text(message);
   }
   DisplayError(message:string):void {
     $('#error-messages').text(message);

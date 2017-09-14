@@ -6,6 +6,7 @@
 class ServerMessenger {
 	private m_Port :object;
 	private m_Domain :string;
+	private m_isFound :boolean;
 	private m_Model	:Model;
 	private m_Cryptor :Cryptor;
 
@@ -13,6 +14,7 @@ class ServerMessenger {
 	{
 		this.m_Model = new Model();
 		this.m_Cryptor = new Cryptor();
+		this.m_isFound = false;
 		this.m_Port = {};
 		this.InitListeners();
 	}
@@ -30,6 +32,12 @@ class ServerMessenger {
 			{
 				console.log("popup connected");
 				self.InitPopupListener(port);
+
+				if (!self.m_isFound)
+				{
+					self.m_Port["popup"].postMessage({NoFormFound: "placeholder"});
+					return;
+				}
 
 				self.m_Model.GetMainData(function(dataset:any) {
 					if (dataset == null)
@@ -133,6 +141,10 @@ class ServerMessenger {
 			if (msg.Domain)
 			{
 				self.m_Domain = msg.Domain;
+			}
+			else if (msg.FormFound)
+			{
+				self.m_isFound = msg.FormFound.val;
 			}
 		});
 	}

@@ -12,6 +12,9 @@ var ClientMessenger = (function () {
             if (msg.DomainExists) {
                 self.m_Manager.SetLayout(msg.DomainExists.val);
             }
+            else if (msg.NoFormFound) {
+                self.m_Manager.SetNoFormFound();
+            }
             else if (msg.isNotSetup) {
                 self.m_Manager.DisplayElement("set-master-password");
             }
@@ -57,10 +60,12 @@ var PopupManager = (function () {
             });
         });
     };
+    PopupManager.prototype.SetNoFormFound = function () {
+        $('#error-message').text("No Form found.");
+        $('#error-messages').show();
+    };
     PopupManager.prototype.SetLayout = function (doesExist) {
-        $("#set-master-password").hide();
-        $("#error-messages").hide();
-        $("#master-password").show();
+        $('#master-password').show();
         //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
         //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
         doesExist ? $("#b-login").show() : $('#b-login').hide();

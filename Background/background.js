@@ -5,6 +5,7 @@ var ServerMessenger = (function () {
     function ServerMessenger() {
         this.m_Model = new Model();
         this.m_Cryptor = new Cryptor();
+        this.m_isFound = false;
         this.m_Port = {};
         this.InitListeners();
     }
@@ -19,6 +20,10 @@ var ServerMessenger = (function () {
             else if (port.name == "popup") {
                 console.log("popup connected");
                 self.InitPopupListener(port);
+                if (!self.m_isFound) {
+                    self.m_Port["popup"].postMessage({ NoFormFound: "placeholder" });
+                    return;
+                }
                 self.m_Model.GetMainData(function (dataset) {
                     if (dataset == null) {
                         self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
@@ -104,6 +109,10 @@ var ServerMessenger = (function () {
         port.onMessage.addListener(function (msg) {
             if (msg.Domain) {
                 self.m_Domain = msg.Domain;
+            }
+            else if (msg.FormFound) {
+                console.log(msg.FormFound.val);
+                self.m_isFound = msg.FormFound.val;
             }
         });
     };
