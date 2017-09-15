@@ -102,6 +102,12 @@ var ServerMessenger = (function () {
                 self.m_Port["options"].postMessage({ Success: "Data for " + domain + " has been changed" });
                 self.m_Port["options"].postMessage({ ResetInput: { val: id } });
             }
+            else if (msg.GenerateRandom) {
+                var id_element = msg.GenerateRandom.id;
+                var random = self.m_Cryptor.GenerateRandom();
+                var type_element = msg.GenerateRandom.type;
+                self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
@@ -111,7 +117,6 @@ var ServerMessenger = (function () {
                 self.m_Domain = msg.Domain;
             }
             else if (msg.FormFound) {
-                console.log(msg.FormFound.val);
                 self.m_isFound = msg.FormFound.val;
             }
         });

@@ -22,11 +22,11 @@ class ClientMessenger {
       }
       else if (msg.isNotSetup)
       {
-         self.m_Manager.DisplayElement("set-master-password");
+         $("#set-master-password").show();
       }
       else if (msg.Error)
       {
-        self.m_Manager.DisplayError(msg.Error);
+        self.m_Manager.SetError(msg.Error);
       }
     });
   } 
@@ -50,7 +50,9 @@ class PopupManager {
         let password = $("#password-input").val();
 
         if (username && password)
-          self.m_Messenger.PostMessage({NewUserInfo: {Username: username, Password: password, MasterPassword: self.m_Password}});
+          self.m_Messenger.PostMessage({NewUserInfo: {Username: username, 
+                                                      Password: password, 
+                                                      MasterPassword: self.m_Password}});
           self.m_Password = "";
       });
       $("#b-setup").on("click", function() {
@@ -75,6 +77,16 @@ class PopupManager {
       $('#error-message').text("No Form found.");
       $('#error-messages').show();
   }
+  SetError(error:string):void {
+      $('#error-message').text(error);
+      $('#error-messages').show();
+      $('#error-messages').fadeOut(3000);
+  }
+  SetSuccess(success:string):void {
+      $('#success-message').text(success);
+      $('#success-messages').show();
+      $('#success-messages').fadeOut(3000);
+  }
   SetLayout(doesExist:boolean):void {
       $('#master-password').show();
         //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
@@ -90,16 +102,6 @@ class PopupManager {
 
       $("#master-password-message").text(message);
   }
-  DisplayError(message:string):void {
-    $('#error-messages').text(message);
-    $('#error-messages').show();
-  }
-  DisplayElement(id:string):void {
-    $('#'+id).show();
-  }
-  HideElement(id:string):void {
-    $('#'+id).hide();
-  }
 }
-
 var manager = new PopupManager();
+

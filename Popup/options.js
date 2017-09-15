@@ -30,6 +30,9 @@ var OptionsMessenger = (function () {
             else if (msg.ResetInput) {
                 self.m_Manager.ChangeTextInputToTd(msg.ResetInput.val);
             }
+            else if (msg.GenerateRandom) {
+                self.m_Manager.SetTextInputValue(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
+            }
         });
     };
     OptionsMessenger.prototype.PostMessage = function (input) {
@@ -83,13 +86,13 @@ var OptionsManager = (function () {
             });
             $('#data-table').on("click", '[id^=change]', function () {
                 var id = $(this).attr("id");
-                id = id.substr(6);
+                id = id.substr(6, id.length);
                 $(this).hide();
                 self.ChangeTdToTextInput(id);
             });
             $('#data-table').on("click", '[id^=save]', function () {
                 var id = $(this).attr("id");
-                id = id.substr(4);
+                id = id.substr(4, id.length);
                 var new_username = $('#td-input-username' + id).val();
                 var new_password = $('#td-input-password' + id).val();
                 var domain = $('#td-domain' + id).text();
@@ -100,7 +103,17 @@ var OptionsManager = (function () {
                             MasterPassword: self.m_Password,
                             Id: id } });
                 else
-                    self.SetError("Input field cant be empty!");
+                    self.SetError("Input fields cant be empty!");
+            });
+            $('#data-table').on("click", '[id^=generate-username]', function () {
+                var id_element = $(this).attr("id");
+                id_element = id_element.substr(17, id_element.length);
+                self.m_Messenger.PostMessage({ GenerateRandom: { id: id_element, type: "username" } });
+            });
+            $('#data-table').on("click", '[id^=generate-password]', function () {
+                var id_element = $(this).attr("id");
+                id_element = id_element.substr(17, id_element.length);
+                self.m_Messenger.PostMessage({ GenerateRandom: { id: id_element, type: "password" } });
             });
             $(document).keyup(function (event) {
                 if (event.keyCode == 13) {
@@ -117,32 +130,35 @@ var OptionsManager = (function () {
         td_username.text("");
         var password = td_password.text();
         td_password.text("");
+        if (username.indexOf("@") == -1)
+            td_username.append('<button type="button" class="btn btn-sm btn-primary" style="margin-right:2%" id="generate-username' + id + '">Generate</button');
+        td_password.append('<button type="button" class="btn btn-sm btn-primary" style="margin-right:2%" id="generate-password' + id + '">Generate</button');
         td_username.append('<input type="text" id="td-input-username' + id + '" value="' + username + '">');
         td_password.append('<input type="text" id="td-input-password' + id + '"value="' + password + '">');
         td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save' + id + '">Save</button');
     };
+    OptionsManager.prototype.SetTextInputValue = function (id, type, value) {
+        if (type == "username")
+            $('#td-input-username' + id).val(value);
+        else if (type == "password")
+            $('#td-input-password' + id).val(value);
+    };
     OptionsManager.prototype.ChangeTextInputToTd = function (id) {
         var input_username = $('#td-input-username' + id);
         var input_password = $('#td-input-password' + id);
-        var button = $('#save' + id);
+        var button_save = $('#save' + id);
+        var button_generate_username = $('#generate-username' + id);
+        var button_generate_password = $('#generate-password' + id);
         var username = input_username.val();
         var password = input_password.val();
         input_username.remove();
         input_password.remove();
-        button.remove();
+        button_generate_password.remove();
+        button_generate_username.remove();
+        button_save.remove();
         $('#td-username' + id).text(username);
         $('#td-password' + id).text(password);
         $('#td-button' + id).append('<button type="button" class="btn btn-sm btn-primary" id="change' + id + '">Change</button>');
-    };
-    OptionsManager.prototype.SetError = function (error) {
-        $('#error-message').text(error);
-        $('#error-messages').show();
-        $('#error-messages').fadeOut(3000);
-    };
-    OptionsManager.prototype.SetSuccess = function (success) {
-        $('#success-message').text(success);
-        $('#success-messages').show();
-        $('#success-messages').fadeOut(3000);
     };
     OptionsManager.prototype.SetAuthenticated = function () {
         this.m_isAuthenticated = true;
@@ -156,6 +172,16 @@ var OptionsManager = (function () {
         });
         $('#auth-no').hide();
         $('#auth-yes').show();
+    };
+    OptionsManager.prototype.SetError = function (error) {
+        $('#error-message').text(error);
+        $('#error-messages').show();
+        $('#error-messages').fadeOut(3000);
+    };
+    OptionsManager.prototype.SetSuccess = function (success) {
+        $('#success-message').text(success);
+        $('#success-messages').show();
+        $('#success-messages').fadeOut(3000);
     };
     OptionsManager.prototype.SetupUserData = function (dataset) {
         var cnt = 0;

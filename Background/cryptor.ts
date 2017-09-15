@@ -26,11 +26,43 @@ class Cryptor {
 		callback(hashed_pw.toString(), salt.toString(), iv.toString());
 	}
 
-	SetSaltAndIv(salt:string, iv:string)
+	SetSaltAndIv(salt:string, iv:string):void
 	{
 		console.log("iv and salt being set: "+iv);
 		this.m_Iv = iv;
 		this.m_Salt = salt;
+	}
+
+	GenerateRandom():string
+	{
+  		let numDigits = Math.floor(Math.random() * 4) + 1;
+  		let numSpecial = Math.floor(Math.random() * 4) + 1;
+  		let numUc = Math.floor(Math.random() * 4) + 1;
+  		let numLc = 16 - numDigits - numSpecial - numUc;
+
+	    var lcLetters = 'abcdefghijklmnopqrstuvwxyz';
+	    var ucLetters = lcLetters.toUpperCase();
+	    var numbers = '0123456789';
+	    var special = '!?=#*$@+-.';
+
+	    var getRand = function(values) {
+	      return values.charAt(Math.floor(Math.random() * values.length));
+	    }
+
+	  //+ Jonas Raoni Soares Silva
+	  //@ http://jsfromhell.com/array/shuffle [v1.0]
+	    function shuffle(o){ //v1.0
+	      for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	      return o;
+	    };
+
+	    var pass = [];
+	    for(var i = 0; i < numLc; ++i) { pass.push(getRand(lcLetters)) }
+	    for(var i = 0; i < numUc; ++i) { pass.push(getRand(ucLetters)) }
+	    for(var i = 0; i < numDigits; ++i) { pass.push(getRand(numbers)) }
+	    for(var i = 0; i < numSpecial; ++i) { pass.push(getRand(special)) }
+
+	    return shuffle(pass).join('');
 	}
 
 	Encrypt(masterpassword:string, dataset:any):void 

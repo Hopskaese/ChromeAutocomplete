@@ -16,10 +16,10 @@ var ClientMessenger = (function () {
                 self.m_Manager.SetNoFormFound();
             }
             else if (msg.isNotSetup) {
-                self.m_Manager.DisplayElement("set-master-password");
+                $("#set-master-password").show();
             }
             else if (msg.Error) {
-                self.m_Manager.DisplayError(msg.Error);
+                self.m_Manager.SetError(msg.Error);
             }
         });
     };
@@ -40,7 +40,9 @@ var PopupManager = (function () {
                 var username = $("#username-input").val();
                 var password = $("#password-input").val();
                 if (username && password)
-                    self.m_Messenger.PostMessage({ NewUserInfo: { Username: username, Password: password, MasterPassword: self.m_Password } });
+                    self.m_Messenger.PostMessage({ NewUserInfo: { Username: username,
+                            Password: password,
+                            MasterPassword: self.m_Password } });
                 self.m_Password = "";
             });
             $("#b-setup").on("click", function () {
@@ -64,6 +66,16 @@ var PopupManager = (function () {
         $('#error-message').text("No Form found.");
         $('#error-messages').show();
     };
+    PopupManager.prototype.SetError = function (error) {
+        $('#error-message').text(error);
+        $('#error-messages').show();
+        $('#error-messages').fadeOut(3000);
+    };
+    PopupManager.prototype.SetSuccess = function (success) {
+        $('#success-message').text(success);
+        $('#success-messages').show();
+        $('#success-messages').fadeOut(3000);
+    };
     PopupManager.prototype.SetLayout = function (doesExist) {
         $('#master-password').show();
         //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
@@ -76,16 +88,6 @@ var PopupManager = (function () {
         else
             message = "Please enter your MasterPassword to set up your data.";
         $("#master-password-message").text(message);
-    };
-    PopupManager.prototype.DisplayError = function (message) {
-        $('#error-messages').text(message);
-        $('#error-messages').show();
-    };
-    PopupManager.prototype.DisplayElement = function (id) {
-        $('#' + id).show();
-    };
-    PopupManager.prototype.HideElement = function (id) {
-        $('#' + id).hide();
     };
     return PopupManager;
 }());

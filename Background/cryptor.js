@@ -19,6 +19,41 @@ var Cryptor = (function () {
         this.m_Iv = iv;
         this.m_Salt = salt;
     };
+    Cryptor.prototype.GenerateRandom = function () {
+        var numDigits = Math.floor(Math.random() * 4) + 1;
+        var numSpecial = Math.floor(Math.random() * 4) + 1;
+        var numUc = Math.floor(Math.random() * 4) + 1;
+        var numLc = 16 - numDigits - numSpecial - numUc;
+        var lcLetters = 'abcdefghijklmnopqrstuvwxyz';
+        var ucLetters = lcLetters.toUpperCase();
+        var numbers = '0123456789';
+        var special = '!?=#*$@+-.';
+        var getRand = function (values) {
+            return values.charAt(Math.floor(Math.random() * values.length));
+        };
+        //+ Jonas Raoni Soares Silva
+        //@ http://jsfromhell.com/array/shuffle [v1.0]
+        function shuffle(o) {
+            for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x)
+                ;
+            return o;
+        }
+        ;
+        var pass = [];
+        for (var i = 0; i < numLc; ++i) {
+            pass.push(getRand(lcLetters));
+        }
+        for (var i = 0; i < numUc; ++i) {
+            pass.push(getRand(ucLetters));
+        }
+        for (var i = 0; i < numDigits; ++i) {
+            pass.push(getRand(numbers));
+        }
+        for (var i = 0; i < numSpecial; ++i) {
+            pass.push(getRand(special));
+        }
+        return shuffle(pass).join('');
+    };
     Cryptor.prototype.Encrypt = function (masterpassword, dataset) {
         if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0) {
             console.log("Salt or Iv error");

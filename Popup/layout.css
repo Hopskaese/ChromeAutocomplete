@@ -13,3 +13,7 @@ body {
 #master-password, #new-credentials {
 	margin-bottom:2%;
 }
+
+#error-messages {
+	margin-top:2%;
+}

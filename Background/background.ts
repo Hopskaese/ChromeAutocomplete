@@ -133,6 +133,14 @@ class ServerMessenger {
 				self.m_Port["options"].postMessage({Success: "Data for "+domain+" has been changed"});
 				self.m_Port["options"].postMessage({ResetInput: {val : id}});
 			}
+			else if (msg.GenerateRandom)
+			{
+				let id_element = msg.GenerateRandom.id;
+				let random = self.m_Cryptor.GenerateRandom();
+				let type_element = msg.GenerateRandom.type;
+
+				self.m_Port["options"].postMessage({GenerateRandom : {val: random, id: id_element, type: type_element}});
+			}
 		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {
