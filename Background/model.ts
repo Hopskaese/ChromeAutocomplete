@@ -12,6 +12,26 @@ class Model {
 		});
 		console.log("Userdata has been saved");
 	}
+	SaveMainData(hash:string, salt:string, iv:string):void {
+		let data = {"Hash": hash, "Salt":salt, "Iv":iv};
+		chrome.storage.local.set({MainData : data}, function() {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+				console.log("Last error" + lasterror.message);
+
+			console.log("Main data has been saved");
+		});
+	}
+	SaveGeneralSettings(frequency:number)
+	{
+		chrome.storage.local.set({GeneralSettings: frequency}, function() {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+				console.log("Last error" + lasterror.message);
+
+			console.log("Main data has been saved");
+		});
+	}
 	DeleteRecord(domain:string, callback:()=>any):void {
 		chrome.storage.local.remove([domain], function() {
 			let lasterror = chrome.runtime.lastError;
@@ -65,16 +85,6 @@ class Model {
 			console.log("Found record. Returning");
 			self.m_CurDataset = dataset[domain];
 			callback(dataset[domain]);
-		});
-	}
-	SaveMainData(hash:string, salt:string, iv:string):void {
-		let data = {"Hash": hash, "Salt":salt, "Iv":iv};
-		chrome.storage.local.set({MainData : data}, function() {
-			let lasterror = chrome.runtime.lastError;
-			if (lasterror)
-				console.log("Last error" + lasterror.message);
-
-			console.log("Main data has been saved");
 		});
 	}
 	GetMainData(callback:(MainData:object)=>any): void {

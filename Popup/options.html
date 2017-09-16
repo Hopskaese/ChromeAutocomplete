@@ -15,7 +15,7 @@
     	</div>
 			<ul class="nav navbar-nav">
 				<li><a href="#" id="change-masterpassword-link">Change Masterpassword</a></li>
-				<li><a href="#" id="change-infos-link">Change Infos</a></li>
+				<li><a href="#" id="general-settings-link">General Settings</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li><a id="auth-status">Authenticated: 
@@ -80,8 +80,32 @@
       		</div>
 		</article>
 	</section>
+	<section class="container" id="general-settings">
+		<h3 class="mid-header"><u>General Settings</u></h3>
+		<table class="table table-hover">
+			<thead></thead>
+			<tbody>
+				<tr>
+					<td>Password change frequency</td>
+					<td>
+						<select>
+							<option value="1">Each day </option>
+							<option value="2">Every second day </option>
+							<option value="3">Every third day </option>
+							<option value="4">Every fourth day </option>
+							<option value="5">Every fifth day </option>
+							<option value="6">Eevery sixth day </option>
+							<option value="7">seven </option>
+							<option value="8">eigth </option>
+						</select>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<input class="btn btn-primary btn-block" value="Save" style="float:right" id="btn-save-generalsettings">
+	</section>
 	<section class="container" id="data-table">
-		<h3 id="data-table-header"><u>Your Data</u></h3>
+		<h3 class="mid-header"><u>Your Data</u></h3>
 		<br/><br/>
 		<table class="table table-hover">
 			<thead>

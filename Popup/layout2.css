@@ -10,7 +10,12 @@
 {
 	color:#7FFF00;
 }
-#data-table-header
+.mid-header
 {
 	text-align:center;
+}
+
+#error-messages, #success-messages, #data-table, #change-masterpassword, #general-settings, #auth-yes, #unlocked
+{
+	display: none;
 }

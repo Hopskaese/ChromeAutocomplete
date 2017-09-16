@@ -13,6 +13,23 @@ var Model = (function () {
         console.log("Userdata has been saved");
         var _a;
     };
+    Model.prototype.SaveMainData = function (hash, salt, iv) {
+        var data = { "Hash": hash, "Salt": salt, "Iv": iv };
+        chrome.storage.local.set({ MainData: data }, function () {
+            var lasterror = chrome.runtime.lastError;
+            if (lasterror)
+                console.log("Last error" + lasterror.message);
+            console.log("Main data has been saved");
+        });
+    };
+    Model.prototype.SaveGeneralSettings = function (frequency) {
+        chrome.storage.local.set({ GeneralSettings: frequency }, function () {
+            var lasterror = chrome.runtime.lastError;
+            if (lasterror)
+                console.log("Last error" + lasterror.message);
+            console.log("Main data has been saved");
+        });
+    };
     Model.prototype.DeleteRecord = function (domain, callback) {
         chrome.storage.local.remove([domain], function () {
             var lasterror = chrome.runtime.lastError;
@@ -60,15 +77,6 @@ var Model = (function () {
             console.log("Found record. Returning");
             self.m_CurDataset = dataset[domain];
             callback(dataset[domain]);
-        });
-    };
-    Model.prototype.SaveMainData = function (hash, salt, iv) {
-        var data = { "Hash": hash, "Salt": salt, "Iv": iv };
-        chrome.storage.local.set({ MainData: data }, function () {
-            var lasterror = chrome.runtime.lastError;
-            if (lasterror)
-                console.log("Last error" + lasterror.message);
-            console.log("Main data has been saved");
         });
     };
     Model.prototype.GetMainData = function (callback) {

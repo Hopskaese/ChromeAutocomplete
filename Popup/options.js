@@ -50,17 +50,13 @@ var OptionsManager = (function () {
     OptionsManager.prototype.InitListeners = function () {
         var self = this;
         $(document).ready(function () {
-            $('#error-messages').hide();
-            $('#success-messages').hide();
-            $('#data-table').hide();
-            $('#change-masterpassword').hide();
-            $('#auth-yes').hide();
-            $('#unlocked').hide();
             $('#btn-authenticate').on("click", function () {
                 var password = $("#master-password-input").val();
                 self.m_Password = password;
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
+            });
+            $('#btn-save-generalsettings').on("click", function () {
             });
             $('#btn-change').on("click", function () {
                 var old_pw = $('#password-old-input').val();
@@ -78,10 +74,20 @@ var OptionsManager = (function () {
             });
             $('#change-masterpassword-link').on("click", function () {
                 $('#data-table').fadeOut(1500, function () {
+                    if ($('#general-settings').is(':visible'))
+                        $('#general-settings').hide();
                     self.m_isAuthenticated ?
                         $('#data-table').fadeOut(1500, function () { $('#change-masterpassword').show(); }) :
                         $('#authentication').fadeOut(1500, function () { $('#change-masterpassword').show(); });
-                    $('#change-masterpassword').show();
+                });
+            });
+            $('body').on("click", '#general-settings-link', function () {
+                $('#data-table').fadeOut(1500, function () {
+                    if ($('#change-masterpassword').is(':visible'))
+                        $('#change-masterpassword').hide();
+                    self.m_isAuthenticated ?
+                        $('#data-table').fadeOut(1500, function () { $('#general-settings').show(); }) :
+                        $('#authentication').fadeOut(1500, function () { $('#general-settings').show(); });
                 });
             });
             $('#data-table').on("click", '[id^=change]', function () {
