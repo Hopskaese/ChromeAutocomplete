@@ -72,7 +72,9 @@ class OptionsManager {
           			self.m_Messenger.PostMessage({MasterPassword: password});
 			});
 			$('#btn-save-generalsettings').on("click", function() {
-
+				let frequency = $('#frequency-select').val();
+				if (frequency)
+					self.m_Messenger.PostMessage({GeneralSettings : frequency});
 			});
 			$('#btn-change').on("click", function() {
 				let old_pw = $('#password-old-input').val();
@@ -93,25 +95,23 @@ class OptionsManager {
 
 			});
 			$('#change-masterpassword-link').on("click", function() {
-				$('#data-table').fadeOut(1500, function() {
-					if($('#general-settings').is(':visible'))
-						$('#general-settings').hide();
+				if($('#general-settings').is(':visible'))
+					$('#general-settings').hide();
 
-					self.m_isAuthenticated ? 
-					$('#data-table').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
-					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}); 
-				});
+				self.m_isAuthenticated ? 
+					$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
+					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}) 
 			});
-			$('body').on("click",'#general-settings-link', function() {
-				$('#data-table').fadeOut(1500, function() {
-					if($('#change-masterpassword').is(':visible'))
-						$('#change-masterpassword').hide();
+			$('#general-settings-link').on("click", function() {
+				if (!self.m_isAuthenticated)
+				{
+					self.SetError("You have to be logged in to change general settings!");
+					return;
+				}
+				if ($('#change-masterpassword').is(':visible'))
+					$('#change-masterpassword').hide();
 
-					self.m_isAuthenticated ?
-					$('#data-table').fadeOut(1500, function() {$('#general-settings').show();}) :
-					$('#authentication').fadeOut(1500, function() {$('#general-settings').show();});
-
-				});
+				$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#general-settings').show();});
 			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");
@@ -226,7 +226,7 @@ class OptionsManager {
 		let cnt = 0;
 		for (let obj in dataset) 
 		{
-			$('tbody').append('<tr>\
+			$('tbody').append('<tr class="data-table-row">\
       						   <th scope="row">'+cnt+'</th>\
       						   <td id="td-domain'+cnt+'">'+obj+'</td>\
                                <td id="td-username'+cnt+'">'+dataset[obj].Username+'</td>\

@@ -141,6 +141,10 @@ class ServerMessenger {
 
 				self.m_Port["options"].postMessage({GenerateRandom : {val: random, id: id_element, type: type_element}});
 			}
+			else if (msg.GeneralSettings)
+			{
+				console.log("Frequency: "+ msg.GeneralSettings);
+			}
 		});
 	}
 	InitFillerListener(port:chrome.runtime.Port):void {

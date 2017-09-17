@@ -108,6 +108,9 @@ var ServerMessenger = (function () {
                 var type_element = msg.GenerateRandom.type;
                 self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
             }
+            else if (msg.GeneralSettings) {
+                console.log("Frequency: " + msg.GeneralSettings);
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
