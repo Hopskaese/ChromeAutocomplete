@@ -1,7 +1,7 @@
 
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="cryptor.ts"/>
-///  <reference path="model.ts" />
+/// <reference path="model.ts" />
 
 class ServerMessenger {
 	private m_Port :object;
@@ -78,11 +78,14 @@ class ServerMessenger {
 					{
 						self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
 						self.m_Port["options"].postMessage({Authenticated : {val : true}});
-						self.m_Model.GetAllUserData(function(dataset:any) {
-							for (let obj in dataset)
-								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset[obj]) 
+						self.m_Model.GetAllUserData(function(dataset2:any) {
+							for (let obj in dataset2)
+								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset2[obj]) 
 						
-							self.m_Port["options"].postMessage({UserData : dataset});
+							self.m_Model.GetGeneralSettings(function(dataset3:any) {
+								self.m_Port["options"].postMessage({Frequency: dataset3.GeneralSettings.Frequency});
+								self.m_Port["options"].postMessage({UserData : dataset2});
+							});
 						});
 					}
 					else
@@ -110,7 +113,7 @@ class ServerMessenger {
 			 						self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
 			 						self.m_Cryptor.SetSaltAndIv(salt, iv);
 			 						self.m_Cryptor.Encrypt(new_pw, dataset[obj]);
-			 						self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+			 						self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged);
 			 					}
 			 				});
 			 			});
@@ -123,13 +126,20 @@ class ServerMessenger {
 			}
 			else if (msg.ChangeUserData)
 			{
-				let domain 		 = msg.ChangeUserData.Domain;
+				let domain = msg.ChangeUserData.Domain
 				let masterpassword = msg.ChangeUserData.MasterPassword;
 				let id = msg.ChangeUserData.Id;
 
 				let dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
-				self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password);
-
+				self.m_Model.GetUserData(domain, function(dataset:any) {
+					if (!dataset)
+					{
+						self.m_Port["options"].postMessage({Error: "Could not retrieve dataset to change Data"});
+						return;
+					}
+					self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password, dataset.LastChanged);
+				});
+			
 				self.m_Port["options"].postMessage({Success: "Data for "+domain+" has been changed"});
 				self.m_Port["options"].postMessage({ResetInput: {val : id}});
 			}
@@ -143,7 +153,7 @@ class ServerMessenger {
 			}
 			else if (msg.GeneralSettings)
 			{
-				console.log("Frequency: "+ msg.GeneralSettings);
+				self.m_Model.SaveGeneralSettings(msg.GeneralSettings.frequency);
 			}
 		});
 	}
@@ -162,19 +172,23 @@ class ServerMessenger {
 	}
 	InitPopupListener(port:chrome.runtime.Port):void {
 		var self = this;
+		var date = new Date();
 		port.onMessage.addListener(function(msg:any) {
 			if (msg.NewUserInfo && self.m_Domain)
 			{
 				self.m_Port["filler"].postMessage({Userdata : msg.NewUserInfo});
 				let user: {[k: string]: any} = {Username: msg.NewUserInfo.Username, Password: msg.NewUserInfo.Password};
 				self.m_Cryptor.Encrypt(msg.NewUserInfo.MasterPassword, user);
-				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+				self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password, date.getTime());
 			}
 			else if (msg.MasterPasswordSetup)
 			{
 				self.m_Model.GetMainData(function(isSetup:any) {
 					if(isSetup == null)
+					{
 						self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
+						self.m_Model.SaveGeneralSettings();
+					}
 				});
 			}
 			else if (msg.MasterPassword)

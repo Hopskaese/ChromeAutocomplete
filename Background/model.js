@@ -2,9 +2,10 @@
 /// <reference path="../Include/index.d.ts"/>
 var Model = (function () {
     function Model() {
+        this.m_CurDataset = null;
     }
-    Model.prototype.SaveUserData = function (domain, username, password) {
-        var credentials = { "Username": username, "Password": password };
+    Model.prototype.SaveUserData = function (domain, username, password, lastchanged) {
+        var credentials = { "Username": username, "Password": password, "LastChanged": lastchanged };
         chrome.storage.local.set((_a = {}, _a[domain] = credentials, _a), function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror)
@@ -23,7 +24,9 @@ var Model = (function () {
         });
     };
     Model.prototype.SaveGeneralSettings = function (frequency) {
-        chrome.storage.local.set({ GeneralSettings: frequency }, function () {
+        if (frequency === void 0) { frequency = 30; }
+        var data = { "Frequency": frequency };
+        chrome.storage.local.set({ GeneralSettings: data }, function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror)
                 console.log("Last error" + lasterror.message);
@@ -53,7 +56,7 @@ var Model = (function () {
                 return;
             }
             for (var key in dataset)
-                if (key == "MainData")
+                if (key == "MainData" || key == "GeneralSettings")
                     delete dataset[key];
             callback(dataset);
         });
@@ -81,6 +84,22 @@ var Model = (function () {
     };
     Model.prototype.GetMainData = function (callback) {
         chrome.storage.local.get("MainData", function (dataset) {
+            var lasterror = chrome.runtime.lastError;
+            if (lasterror) {
+                console.log("Error retrieving value from storage" + lasterror.message);
+                callback(null);
+                return;
+            }
+            else if (Object.keys(dataset).length == 0) {
+                console.log("record does not exist");
+                callback(null);
+                return;
+            }
+            callback(dataset);
+        });
+    };
+    Model.prototype.GetGeneralSettings = function (callback) {
+        chrome.storage.local.get("GeneralSettings", function (dataset) {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);

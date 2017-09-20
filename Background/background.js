@@ -1,6 +1,6 @@
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="cryptor.ts"/>
-///  <reference path="model.ts" />
+/// <reference path="model.ts" />
 var ServerMessenger = (function () {
     function ServerMessenger() {
         this.m_Model = new Model();
@@ -56,10 +56,13 @@ var ServerMessenger = (function () {
                     if (dataset.MainData.Hash == hashed_pw_1) {
                         self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
                         self.m_Port["options"].postMessage({ Authenticated: { val: true } });
-                        self.m_Model.GetAllUserData(function (dataset) {
-                            for (var obj in dataset)
-                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset[obj]);
-                            self.m_Port["options"].postMessage({ UserData: dataset });
+                        self.m_Model.GetAllUserData(function (dataset2) {
+                            for (var obj in dataset2)
+                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset2[obj]);
+                            self.m_Model.GetGeneralSettings(function (dataset3) {
+                                self.m_Port["options"].postMessage({ Frequency: dataset3.GeneralSettings.Frequency });
+                                self.m_Port["options"].postMessage({ UserData: dataset2 });
+                            });
                         });
                     }
                     else {
@@ -83,7 +86,7 @@ var ServerMessenger = (function () {
                                     self.m_Cryptor.Decrypt(old_pw_1, dataset[obj]);
                                     self.m_Cryptor.SetSaltAndIv(salt, iv);
                                     self.m_Cryptor.Encrypt(new_pw_1, dataset[obj]);
-                                    self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password);
+                                    self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged);
                                 }
                             });
                         });
@@ -94,12 +97,18 @@ var ServerMessenger = (function () {
                 });
             }
             else if (msg.ChangeUserData) {
-                var domain = msg.ChangeUserData.Domain;
+                var domain_1 = msg.ChangeUserData.Domain;
                 var masterpassword = msg.ChangeUserData.MasterPassword;
                 var id = msg.ChangeUserData.Id;
                 var dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
-                self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password);
-                self.m_Port["options"].postMessage({ Success: "Data for " + domain + " has been changed" });
+                self.m_Model.GetUserData(domain_1, function (dataset) {
+                    if (!dataset) {
+                        self.m_Port["options"].postMessage({ Error: "Could not retrieve dataset to change Data" });
+                        return;
+                    }
+                    self.m_Model.SaveUserData(domain_1, msg.ChangeUserData.Username, msg.ChangeUserData.Password, dataset.LastChanged);
+                });
+                self.m_Port["options"].postMessage({ Success: "Data for " + domain_1 + " has been changed" });
                 self.m_Port["options"].postMessage({ ResetInput: { val: id } });
             }
             else if (msg.GenerateRandom) {
@@ -109,7 +118,7 @@ var ServerMessenger = (function () {
                 self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
             }
             else if (msg.GeneralSettings) {
-                console.log("Frequency: " + msg.GeneralSettings);
+                self.m_Model.SaveGeneralSettings(msg.GeneralSettings.frequency);
             }
         });
     };
@@ -126,17 +135,20 @@ var ServerMessenger = (function () {
     };
     ServerMessenger.prototype.InitPopupListener = function (port) {
         var self = this;
+        var date = new Date();
         port.onMessage.addListener(function (msg) {
             if (msg.NewUserInfo && self.m_Domain) {
                 self.m_Port["filler"].postMessage({ Userdata: msg.NewUserInfo });
                 var user = { Username: msg.NewUserInfo.Username, Password: msg.NewUserInfo.Password };
                 self.m_Cryptor.Encrypt(msg.NewUserInfo.MasterPassword, user);
-                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password);
+                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password, date.getTime());
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {
-                    if (isSetup == null)
+                    if (isSetup == null) {
                         self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
+                        self.m_Model.SaveGeneralSettings();
+                    }
                 });
             }
             else if (msg.MasterPassword) {

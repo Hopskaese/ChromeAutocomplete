@@ -15,7 +15,7 @@ var Cryptor = (function () {
         callback(hashed_pw.toString(), salt.toString(), iv.toString());
     };
     Cryptor.prototype.SetSaltAndIv = function (salt, iv) {
-        console.log("iv and salt being set: " + iv);
+        console.log("iv and salt being set: " + salt);
         this.m_Iv = iv;
         this.m_Salt = salt;
     };

@@ -2,9 +2,12 @@
 /// <reference path="../Include/index.d.ts"/>
 class Model {
 	private m_CurDataset: object;
-	constructor(){}
-	SaveUserData(domain:string, username:string, password:string):void {
-		let credentials = {"Username": username, "Password": password};
+	constructor()
+	{
+		this.m_CurDataset = null;
+	}
+	SaveUserData(domain:string, username:string, password:string, lastchanged: number):void {
+		let credentials = {"Username": username, "Password": password, "LastChanged": lastchanged};
 		chrome.storage.local.set({[domain] : credentials}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
@@ -22,9 +25,10 @@ class Model {
 			console.log("Main data has been saved");
 		});
 	}
-	SaveGeneralSettings(frequency:number)
+	SaveGeneralSettings(frequency:number = 30)
 	{
-		chrome.storage.local.set({GeneralSettings: frequency}, function() {
+		let data = {"Frequency": frequency};
+		chrome.storage.local.set({GeneralSettings: data}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 				console.log("Last error" + lasterror.message);
@@ -58,7 +62,7 @@ class Model {
 				return;
 			}
 			for (let key in dataset)
-				if (key == "MainData")
+				if (key == "MainData" || key == "GeneralSettings")
 					delete dataset[key];
 
 			callback(dataset);
@@ -89,6 +93,24 @@ class Model {
 	}
 	GetMainData(callback:(MainData:object)=>any): void {
 		chrome.storage.local.get("MainData", function(dataset) {
+			let lasterror = chrome.runtime.lastError;
+			if (lasterror)
+			{
+				console.log("Error retrieving value from storage" + lasterror.message);
+				callback(null);
+				return;
+			}
+			else if (Object.keys(dataset).length == 0) 
+			{
+				console.log("record does not exist");
+				callback(null);
+				return;
+			}
+			callback(dataset);
+		});
+	}
+	GetGeneralSettings(callback:(MainData:object)=>any):void {
+		chrome.storage.local.get("GeneralSettings", function(dataset) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{

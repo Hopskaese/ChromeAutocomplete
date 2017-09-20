@@ -45,6 +45,10 @@ class OptionsMessenger {
     	{
     		self.m_Manager.SetTextInputValue(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
     	}
+    	else if (msg.Frequency)
+    	{
+    		self.m_Manager.SetFrequency(msg.Frequency);
+    	}
     });
   }
   PostMessage(input:object):void {
@@ -56,11 +60,13 @@ class OptionsManager {
 	private m_Messenger:OptionsMessenger;
 	private m_isAuthenticated:boolean;
 	private m_Password :string;
+	private m_Frequency :number;
 	constructor() {
 		this.m_Messenger = new OptionsMessenger(this);
 		this.InitListeners();
 		this.m_isAuthenticated = false;
 		this.m_Password = "";
+		this.m_Frequency = 0;
 	}
 	InitListeners():void {
 		let self = this;
@@ -172,12 +178,6 @@ class OptionsManager {
 		td_password.append('<input type="text" id="td-input-password'+id+'"value="'+password+'">');
 		td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save'+id+'">Save</button');
 	}
-	SetTextInputValue(id:string, type:string, value:string):void {
-		if (type == "username")
-			$('#td-input-username'+id).val(value);
-		else if (type == "password")
-			$('#td-input-password'+id).val(value);
-	}
 	ChangeTextInputToTd(id:string):void {
 		let input_username = $('#td-input-username'+id);
 		let input_password = $('#td-input-password'+id);
@@ -197,6 +197,16 @@ class OptionsManager {
 		$('#td-username'+id).text(username);
 		$('#td-password'+id).text(password);
 		$('#td-button'+id).append('<button type="button" class="btn btn-sm btn-primary" id="change'+id+'">Change</button>');
+	}
+	SetTextInputValue(id:string, type:string, value:string):void {
+		if (type == "username")
+			$('#td-input-username'+id).val(value);
+		else if (type == "password")
+			$('#td-input-password'+id).val(value);
+	}
+	SetFrequency(frequency:number)
+	{
+		this.m_Frequency = frequency;
 	}
 	SetAuthenticated():void {
 		this.m_isAuthenticated = true;
@@ -224,15 +234,36 @@ class OptionsManager {
 	SetupUserData(dataset:any)
 	{
 		let cnt = 0;
+		let date = new Date();
+		let time = date.getTime();
+
+		let time_left:number = 0;
+		let time_string:string = "";
+
 		for (let obj in dataset) 
 		{
+			time_left = (time - dataset[obj].LastChanged) / 1000 / 60 / 60 / 24;
+			time_left = this.m_Frequency - time_left;
+		
+			if ((time_left / 30) == 1)
+				time_string = "1 Month";
+			else if ((time_left / 7 > 1))
+				time_string = ""+Math.floor(time_left/7)+" weeks and "+Math.floor(time_left % 7)+" days";
+			else
+				time_string = ""+Math.floor(time_left)+" days";
+
 			$('tbody').append('<tr class="data-table-row">\
       						   <th scope="row">'+cnt+'</th>\
       						   <td id="td-domain'+cnt+'">'+obj+'</td>\
                                <td id="td-username'+cnt+'">'+dataset[obj].Username+'</td>\
                                <td id="td-password'+cnt+'">'+dataset[obj].Password+'</td>\
                                <td id="td-button'+cnt+'"><button type="button" class="btn btn-sm btn-primary" id="change'+cnt+'">Change</button></td>\
+                               <td id="td-deadline'+cnt+'">'+time_string+'</td>\
                                </tr>');
+
+			if (time_left < 0)
+				$('#td-deadline').css("border", "#ff0000");
+
 			cnt++;
 		}
 	}

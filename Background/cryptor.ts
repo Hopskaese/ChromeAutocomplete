@@ -28,7 +28,7 @@ class Cryptor {
 
 	SetSaltAndIv(salt:string, iv:string):void
 	{
-		console.log("iv and salt being set: "+iv);
+		console.log("iv and salt being set: "+salt);
 		this.m_Iv = iv;
 		this.m_Salt = salt;
 	}

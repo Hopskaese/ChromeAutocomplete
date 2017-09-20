@@ -33,6 +33,9 @@ var OptionsMessenger = (function () {
             else if (msg.GenerateRandom) {
                 self.m_Manager.SetTextInputValue(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
             }
+            else if (msg.Frequency) {
+                self.m_Manager.SetFrequency(msg.Frequency);
+            }
         });
     };
     OptionsMessenger.prototype.PostMessage = function (input) {
@@ -46,6 +49,7 @@ var OptionsManager = (function () {
         this.InitListeners();
         this.m_isAuthenticated = false;
         this.m_Password = "";
+        this.m_Frequency = 0;
     }
     OptionsManager.prototype.InitListeners = function () {
         var self = this;
@@ -144,12 +148,6 @@ var OptionsManager = (function () {
         td_password.append('<input type="text" id="td-input-password' + id + '"value="' + password + '">');
         td_button.append('<button type="button" class="btn btn-sm btn-primary" id="save' + id + '">Save</button');
     };
-    OptionsManager.prototype.SetTextInputValue = function (id, type, value) {
-        if (type == "username")
-            $('#td-input-username' + id).val(value);
-        else if (type == "password")
-            $('#td-input-password' + id).val(value);
-    };
     OptionsManager.prototype.ChangeTextInputToTd = function (id) {
         var input_username = $('#td-input-username' + id);
         var input_password = $('#td-input-password' + id);
@@ -166,6 +164,15 @@ var OptionsManager = (function () {
         $('#td-username' + id).text(username);
         $('#td-password' + id).text(password);
         $('#td-button' + id).append('<button type="button" class="btn btn-sm btn-primary" id="change' + id + '">Change</button>');
+    };
+    OptionsManager.prototype.SetTextInputValue = function (id, type, value) {
+        if (type == "username")
+            $('#td-input-username' + id).val(value);
+        else if (type == "password")
+            $('#td-input-password' + id).val(value);
+    };
+    OptionsManager.prototype.SetFrequency = function (frequency) {
+        this.m_Frequency = frequency;
     };
     OptionsManager.prototype.SetAuthenticated = function () {
         this.m_isAuthenticated = true;
@@ -192,14 +199,29 @@ var OptionsManager = (function () {
     };
     OptionsManager.prototype.SetupUserData = function (dataset) {
         var cnt = 0;
+        var date = new Date();
+        var time = date.getTime();
+        var time_left = 0;
+        var time_string = "";
         for (var obj in dataset) {
+            time_left = (time - dataset[obj].LastChanged) / 1000 / 60 / 60 / 24;
+            time_left = this.m_Frequency - time_left;
+            if ((time_left / 30) == 1)
+                time_string = "1 Month";
+            else if ((time_left / 7 > 1))
+                time_string = "" + Math.floor(time_left / 7) + " weeks and " + Math.floor(time_left % 7) + " days";
+            else
+                time_string = "" + Math.floor(time_left) + " days";
             $('tbody').append('<tr class="data-table-row">\
       						   <th scope="row">' + cnt + '</th>\
       						   <td id="td-domain' + cnt + '">' + obj + '</td>\
                                <td id="td-username' + cnt + '">' + dataset[obj].Username + '</td>\
                                <td id="td-password' + cnt + '">' + dataset[obj].Password + '</td>\
                                <td id="td-button' + cnt + '"><button type="button" class="btn btn-sm btn-primary" id="change' + cnt + '">Change</button></td>\
+                               <td id="td-deadline' + cnt + '">' + time_string + '</td>\
                                </tr>');
+            if (time_left < 0)
+                $('#td-deadline').css("border", "#ff0000");
             cnt++;
         }
     };
