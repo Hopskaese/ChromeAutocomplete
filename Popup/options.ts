@@ -1,6 +1,11 @@
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="../Include/index2.d.ts"/>
 
+enum States {
+	ST_BEFORELOGIN,
+	ST_AFTERLOGIN
+}
+
 class OptionsMessenger {
   private m_Port:chrome.runtime.Port;
   private m_Manager:OptionsManager;
@@ -61,12 +66,14 @@ class OptionsManager {
 	private m_isAuthenticated:boolean;
 	private m_Password :string;
 	private m_Frequency :number;
+	private m_State :number;
 	constructor() {
 		this.m_Messenger = new OptionsMessenger(this);
 		this.InitListeners();
 		this.m_isAuthenticated = false;
 		this.m_Password = "";
 		this.m_Frequency = 0;
+		this.m_State = States.ST_BEFORELOGIN;
 	}
 	InitListeners():void {
 		let self = this;
@@ -155,7 +162,8 @@ class OptionsManager {
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
-					$("#btn-authenticate").click();
+					if(self.m_State === States.ST_BEFORELOGIN)
+						$("#btn-authenticate").click();
 				}
 			});
 		});
@@ -252,14 +260,14 @@ class OptionsManager {
 			else
 				time_string = ""+Math.floor(time_left)+" days";
 
-			$('tbody').append('<tr class="data-table-row">\
+			$('#data-table-body').append('<tr class="data-table-row">\
       						   <th scope="row">'+cnt+'</th>\
       						   <td id="td-domain'+cnt+'">'+obj+'</td>\
-                               <td id="td-username'+cnt+'">'+dataset[obj].Username+'</td>\
-                               <td id="td-password'+cnt+'">'+dataset[obj].Password+'</td>\
-                               <td id="td-button'+cnt+'"><button type="button" class="btn btn-sm btn-primary" id="change'+cnt+'">Change</button></td>\
-                               <td id="td-deadline'+cnt+'">'+time_string+'</td>\
-                               </tr>');
+                     <td id="td-username'+cnt+'">'+dataset[obj].Username+'</td>\
+                     <td id="td-password'+cnt+'">'+dataset[obj].Password+'</td>\
+                     <td id="td-button'+cnt+'"><button type="button" class="btn btn-sm btn-primary" id="change'+cnt+'">Change</button></td>\
+                     <td id="td-deadline'+cnt+'">'+time_string+'</td>\
+                     </tr>');
 
 			if (time_left < 0)
 				$('#td-deadline'+cnt).css("border", "#ff0000");

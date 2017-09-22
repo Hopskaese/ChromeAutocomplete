@@ -1,5 +1,10 @@
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="../Include/index2.d.ts"/>
+var States;
+(function (States) {
+    States[States["ST_BEFORELOGIN"] = 0] = "ST_BEFORELOGIN";
+    States[States["ST_AFTERLOGIN"] = 1] = "ST_AFTERLOGIN";
+})(States || (States = {}));
 var OptionsMessenger = (function () {
     function OptionsMessenger(manager) {
         this.m_Manager = manager;
@@ -50,6 +55,7 @@ var OptionsManager = (function () {
         this.m_isAuthenticated = false;
         this.m_Password = "";
         this.m_Frequency = 0;
+        this.m_State = States.ST_BEFORELOGIN;
     }
     OptionsManager.prototype.InitListeners = function () {
         var self = this;
@@ -128,7 +134,8 @@ var OptionsManager = (function () {
             });
             $(document).keyup(function (event) {
                 if (event.keyCode == 13) {
-                    $("#btn-authenticate").click();
+                    if (self.m_State === States.ST_BEFORELOGIN)
+                        $("#btn-authenticate").click();
                 }
             });
         });
@@ -212,14 +219,14 @@ var OptionsManager = (function () {
                 time_string = "" + Math.floor(time_left / 7) + " weeks and " + Math.floor(time_left % 7) + " days";
             else
                 time_string = "" + Math.floor(time_left) + " days";
-            $('tbody').append('<tr class="data-table-row">\
+            $('#data-table-body').append('<tr class="data-table-row">\
       						   <th scope="row">' + cnt + '</th>\
       						   <td id="td-domain' + cnt + '">' + obj + '</td>\
-                               <td id="td-username' + cnt + '">' + dataset[obj].Username + '</td>\
-                               <td id="td-password' + cnt + '">' + dataset[obj].Password + '</td>\
-                               <td id="td-button' + cnt + '"><button type="button" class="btn btn-sm btn-primary" id="change' + cnt + '">Change</button></td>\
-                               <td id="td-deadline' + cnt + '">' + time_string + '</td>\
-                               </tr>');
+                     <td id="td-username' + cnt + '">' + dataset[obj].Username + '</td>\
+                     <td id="td-password' + cnt + '">' + dataset[obj].Password + '</td>\
+                     <td id="td-button' + cnt + '"><button type="button" class="btn btn-sm btn-primary" id="change' + cnt + '">Change</button></td>\
+                     <td id="td-deadline' + cnt + '">' + time_string + '</td>\
+                     </tr>');
             if (time_left < 0)
                 $('#td-deadline' + cnt).css("border", "#ff0000");
             cnt++;

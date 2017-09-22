@@ -1,6 +1,14 @@
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="../Include/index2.d.ts"/>
 
+
+//ADD MORE STATES, CHANGE STATES IN FUNCTIONS IN OPTIONS TOO.
+enum States {
+    ST_BEFOREMASTERSETUP,
+    ST_MASTERPASSWORD,
+    ST_SETUP
+}
+
 class ClientMessenger {
   m_Port:chrome.runtime.Port;
   m_Manager:PopupManager;
@@ -38,9 +46,11 @@ class ClientMessenger {
 class PopupManager {
   private m_Messenger:ClientMessenger;
   private m_Password:String;
+  private m_State:number
   constructor() {
     this.m_Messenger = new ClientMessenger(this);
     this.InitListeners();
+    this.m_State = States.ST_BEFOREMASTERSETUP;
   }
   InitListeners():void {
     let self = this;
@@ -65,10 +75,21 @@ class PopupManager {
          if (password)
            self.m_Messenger.PostMessage({MasterPassword: password});
       });
+      $(document).keyup(function(event) {
+            if (event.keyCode == 13) {
+                if(self.m_State === States.ST_BEFOREMASTERSETUP)
+                    $("#post-set-master-password").click();
+            }
+      });
       $("#post-set-master-password").on("click", function() {
         let password = $("#set-master-password-input").val();
         if (password)
+        {
           self.m_Messenger.PostMessage({MasterPasswordSetup : password});
+          $("#set-master-password").fadeOut(500, function() {
+              self.SetLayout(false);
+          });
+        }
       });
     });
   }

@@ -57,8 +57,12 @@ var PopupManager = (function () {
             });
             $("#post-set-master-password").on("click", function () {
                 var password = $("#set-master-password-input").val();
-                if (password)
+                if (password) {
                     self.m_Messenger.PostMessage({ MasterPasswordSetup: password });
+                    $("#set-master-password").fadeOut(500, function () {
+                        self.SetLayout(false);
+                    });
+                }
             });
         });
     };

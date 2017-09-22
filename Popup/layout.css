@@ -17,3 +17,7 @@ body {
 #error-messages {
 	margin-top:2%;
 }
+
+#post-set-master-password {
+	margin-bottom: 2%;
+}
