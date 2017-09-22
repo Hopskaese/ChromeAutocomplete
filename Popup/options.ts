@@ -262,7 +262,7 @@ class OptionsManager {
                                </tr>');
 
 			if (time_left < 0)
-				$('#td-deadline').css("border", "#ff0000");
+				$('#td-deadline'+cnt).css("border", "#ff0000");
 
 			cnt++;
 		}

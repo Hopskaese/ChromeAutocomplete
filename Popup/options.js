@@ -221,7 +221,7 @@ var OptionsManager = (function () {
                                <td id="td-deadline' + cnt + '">' + time_string + '</td>\
                                </tr>');
             if (time_left < 0)
-                $('#td-deadline').css("border", "#ff0000");
+                $('#td-deadline' + cnt).css("border", "#ff0000");
             cnt++;
         }
     };
