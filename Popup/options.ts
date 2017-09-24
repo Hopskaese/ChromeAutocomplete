@@ -113,13 +113,20 @@ class OptionsManager {
 				if (self.m_State === States.ST_GENERALSETTINGS)
 					$('#general-settings').fadeOut(1500, function() {
 						$('#data-table').add('.data-table-row').show();
+						self.m_State = States.ST_NONE;
 					});
 				else if (self.m_State === States.ST_CHANGEPW)
 					$('#change-masterpassword').fadeOut(1500, function() {
 						if (self.m_isAuthenticated)
+						{
 							$('#data-table').add('.data-table-row').show();
+							self.m_State = States.ST_NONE;
+						}
 						else
+						{
 							$('#authentication').show();
+							self.m_State = States.ST_LOGIN;
+						}
 					});
 			});
 			$('#change-masterpassword-link').on("click", function() {
@@ -185,7 +192,7 @@ class OptionsManager {
 					else if (self.m_State === States.ST_CHANGEPW)
 						$("#btn-change").click();
 					else if (self.m_State === States.ST_GENERALSETTINGS)
-						$("#general-settings-link").click();
+						$("#btn-save-generalsettings").click();
 				}
 			});
 		});
@@ -278,7 +285,7 @@ class OptionsManager {
 		
 			if ((time_left / 30) == 1)
 				time_string = "1 Month";
-			else if ((time_left / 7 > 1))
+			else if (time_left / 7 > 1)
 				time_string = ""+Math.floor(time_left/7)+" weeks and "+Math.floor(time_left % 7)+" days";
 			else
 				time_string = ""+Math.floor(time_left)+" days";
@@ -293,7 +300,7 @@ class OptionsManager {
                      </tr>');
 
 			if (time_left < 0)
-				$('#td-deadline'+cnt).css("border", "#ff0000");
+				$('#td-deadline'+cnt).css("color", "#ff0000");
 
 			cnt++;
 		}

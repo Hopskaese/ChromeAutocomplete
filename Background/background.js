@@ -98,18 +98,13 @@ var ServerMessenger = (function () {
                 });
             }
             else if (msg.ChangeUserData) {
-                var domain_1 = msg.ChangeUserData.Domain;
+                var date = new Date();
+                var domain = msg.ChangeUserData.Domain;
                 var masterpassword = msg.ChangeUserData.MasterPassword;
                 var id = msg.ChangeUserData.Id;
                 var dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
-                self.m_Model.GetUserData(domain_1, function (dataset) {
-                    if (!dataset) {
-                        self.m_Port["options"].postMessage({ Error: "Could not retrieve dataset to change Data" });
-                        return;
-                    }
-                    self.m_Model.SaveUserData(domain_1, msg.ChangeUserData.Username, msg.ChangeUserData.Password, dataset.LastChanged);
-                });
-                self.m_Port["options"].postMessage({ Success: "Data for " + domain_1 + " has been changed" });
+                self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password, date.getTime());
+                self.m_Port["options"].postMessage({ Success: "Data for " + domain + " has been changed" });
                 self.m_Port["options"].postMessage({ ResetInput: { val: id } });
             }
             else if (msg.GenerateRandom) {
@@ -119,7 +114,7 @@ var ServerMessenger = (function () {
                 self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
             }
             else if (msg.GeneralSettings) {
-                self.m_Model.SaveGeneralSettings(msg.GeneralSettings.frequency);
+                self.m_Model.SaveGeneralSettings(msg.GeneralSettings);
             }
         });
     };

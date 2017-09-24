@@ -128,20 +128,14 @@ class ServerMessenger {
 			}
 			else if (msg.ChangeUserData)
 			{
+				var date = new Date();
 				let domain = msg.ChangeUserData.Domain
 				let masterpassword = msg.ChangeUserData.MasterPassword;
 				let id = msg.ChangeUserData.Id;
 
 				let dataset_encrypted = self.m_Cryptor.Encrypt(masterpassword, msg.ChangeUserData);
-				self.m_Model.GetUserData(domain, function(dataset:any) {
-					if (!dataset)
-					{
-						self.m_Port["options"].postMessage({Error: "Could not retrieve dataset to change Data"});
-						return;
-					}
-					self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password, dataset.LastChanged);
-				});
-			
+				self.m_Model.SaveUserData(domain, msg.ChangeUserData.Username, msg.ChangeUserData.Password, date.getTime());
+	
 				self.m_Port["options"].postMessage({Success: "Data for "+domain+" has been changed"});
 				self.m_Port["options"].postMessage({ResetInput: {val : id}});
 			}
@@ -155,7 +149,7 @@ class ServerMessenger {
 			}
 			else if (msg.GeneralSettings)
 			{
-				self.m_Model.SaveGeneralSettings(msg.GeneralSettings.frequency);
+				self.m_Model.SaveGeneralSettings(msg.GeneralSettings);
 			}
 		});
 	}
