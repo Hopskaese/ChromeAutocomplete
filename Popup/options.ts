@@ -2,8 +2,10 @@
 /// <reference path="../Include/index2.d.ts"/>
 
 enum States {
-	ST_BEFORELOGIN,
-	ST_AFTERLOGIN
+	ST_NONE,
+	ST_LOGIN,
+	ST_CHANGEPW,
+	ST_GENERALSETTINGS
 }
 
 class OptionsMessenger {
@@ -73,7 +75,7 @@ class OptionsManager {
 		this.m_isAuthenticated = false;
 		this.m_Password = "";
 		this.m_Frequency = 0;
-		this.m_State = States.ST_BEFORELOGIN;
+		this.m_State = States.ST_LOGIN;
 	}
 	InitListeners():void {
 		let self = this;
@@ -107,6 +109,19 @@ class OptionsManager {
 				}
 
 			});
+			$("#btn-home").on("click", function() {
+				if (self.m_State === States.ST_GENERALSETTINGS)
+					$('#general-settings').fadeOut(1500, function() {
+						$('#data-table').add('.data-table-row').show();
+					});
+				else if (self.m_State === States.ST_CHANGEPW)
+					$('#change-masterpassword').fadeOut(1500, function() {
+						if (self.m_isAuthenticated)
+							$('#data-table').add('.data-table-row').show();
+						else
+							$('#authentication').show();
+					});
+			});
 			$('#change-masterpassword-link').on("click", function() {
 				if($('#general-settings').is(':visible'))
 					$('#general-settings').hide();
@@ -114,6 +129,8 @@ class OptionsManager {
 				self.m_isAuthenticated ? 
 					$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
 					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}) 
+
+					self.m_State = States.ST_CHANGEPW;
 			});
 			$('#general-settings-link').on("click", function() {
 				if (!self.m_isAuthenticated)
@@ -125,6 +142,7 @@ class OptionsManager {
 					$('#change-masterpassword').hide();
 
 				$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#general-settings').show();});
+				self.m_State = States.ST_GENERALSETTINGS;
 			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");
@@ -162,8 +180,12 @@ class OptionsManager {
 			});
 			$(document).keyup(function(event) {
 				if (event.keyCode == 13) {
-					if(self.m_State === States.ST_BEFORELOGIN)
+					if (self.m_State === States.ST_LOGIN)
 						$("#btn-authenticate").click();
+					else if (self.m_State === States.ST_CHANGEPW)
+						$("#btn-change").click();
+					else if (self.m_State === States.ST_GENERALSETTINGS)
+						$("#general-settings-link").click();
 				}
 			});
 		});
@@ -228,6 +250,7 @@ class OptionsManager {
 		});
 		$('#auth-no').hide();
 		$('#auth-yes').show();
+		this.m_State = States.ST_NONE;
 	}
 	SetError(error:string):void {
 		$('#error-message').text(error);

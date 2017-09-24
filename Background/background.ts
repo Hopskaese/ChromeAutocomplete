@@ -117,6 +117,8 @@ class ServerMessenger {
 			 					}
 			 				});
 			 			});
+
+			 			self.m_Port["options"].postMessage({Success: "Changed Master-Password"});
 			 		}
 			 		else
 			 		{

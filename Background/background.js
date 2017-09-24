@@ -90,6 +90,7 @@ var ServerMessenger = (function () {
                                 }
                             });
                         });
+                        self.m_Port["options"].postMessage({ Success: "Changed Master-Password" });
                     }
                     else {
                         self.m_Port["options"].postMessage({ Error: "Wrong Master-Password" });
