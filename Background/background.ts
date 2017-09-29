@@ -72,19 +72,17 @@ class ServerMessenger {
 		port.onMessage.addListener(function(msg:any) {
 			if (msg.MasterPassword)
 			{
-				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-				self.m_Model.GetMainData(function(dataset:any) {
-					if (dataset.MainData.Hash == hashed_pw)
+				self.Authenticate(msg.MasterPassword, function(isAuthenticated:boolean, dataset:any) {
+					if (isAuthenticated)
 					{
 						self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
 						self.m_Port["options"].postMessage({Authenticated : {val : true}});
-						self.m_Model.GetAllUserData(function(dataset2:any) {
-							for (let obj in dataset2)
-								self.m_Cryptor.Decrypt(msg.MasterPassword, dataset2[obj]) 
-						
-							self.m_Model.GetGeneralSettings(function(dataset3:any) {
-								self.m_Port["options"].postMessage({Frequency: dataset3.GeneralSettings.Frequency});
-								self.m_Port["options"].postMessage({UserData : dataset2});
+
+						self.m_Model.GetGeneralSettings(function(dataset2:any) {
+							self.m_Port["options"].postMessage({Frequency: dataset2.GeneralSettings.Frequency});
+							
+							self.GetDecryptedUserData(msg.MasterPassword, function(dataset3:any) {
+								self.m_Port["options"].postMessage({UserData : dataset3});
 							});
 						});
 					}
@@ -97,23 +95,22 @@ class ServerMessenger {
 			else if (msg.ChangeMasterPassword)
 			{
 			 	let old_pw = msg.ChangeMasterPassword.OldPassword;
-			 	let hashed_old = self.m_Cryptor.Hash(old_pw);
 			 	let new_pw = msg.ChangeMasterPassword.NewPassword;
-			 	self.m_Model.GetMainData(function(dataset:any) {
-			 		if (dataset.MainData.Hash === hashed_old) 
+			 	self.Authenticate(old_pw, function(isAuthenticated:boolean, dataset:any) {
+			 		if (isAuthenticated) 
 			 		{
 			 			let salt_old = dataset.MainData.Salt;
 			 			let iv_old = dataset.MainData.Iv;
 			 			self.m_Cryptor.MainSetup(new_pw, function(hashed_pw:string, salt:string, iv:string) {
 			 					self.m_Model.SaveMainData(hashed_pw, salt, iv);
-			 					self.m_Model.GetAllUserData(function(dataset:any) {
-			 					for (let obj in dataset)
+			 					self.m_Model.GetAllUserData(function(dataset2:any) {
+			 					for (let obj in dataset2)
 			 					{
 			 						self.m_Cryptor.SetSaltAndIv(salt_old, iv_old);
-			 						self.m_Cryptor.Decrypt(old_pw, dataset[obj]);
+			 						self.m_Cryptor.Decrypt(old_pw, dataset2[obj]);
 			 						self.m_Cryptor.SetSaltAndIv(salt, iv);
-			 						self.m_Cryptor.Encrypt(new_pw, dataset[obj]);
-			 						self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged);
+			 						self.m_Cryptor.Encrypt(new_pw, dataset2[obj]);
+			 						self.m_Model.SaveUserData(obj, dataset2[obj].Username, dataset2[obj].Password, dataset2[obj].LastChanged);
 			 					}
 			 				});
 			 			});
@@ -149,7 +146,13 @@ class ServerMessenger {
 			}
 			else if (msg.GeneralSettings)
 			{
-				self.m_Model.SaveGeneralSettings(msg.GeneralSettings);
+				self.m_Model.SaveGeneralSettings(msg.GeneralSettings.Frequency);
+				self.GetDecryptedUserData(msg.GeneralSettings.MasterPassword, function(dataset:any) {
+					if(dataset)
+						self.m_Port["options"].postMessage({UpdatedUserData: dataset});
+					else
+						self.m_Port["options"].postMessage({Error : "Could not decrypt updated Userdata"});
+				});
 			}
 		});
 	}
@@ -189,9 +192,8 @@ class ServerMessenger {
 			}
 			else if (msg.MasterPassword)
 			{
-				let hashed_pw = self.m_Cryptor.Hash(msg.MasterPassword);
-				self.m_Model.GetMainData(function(dataset:any) {
-					if (dataset.MainData.Hash == hashed_pw)
+				self.Authenticate(msg.MasterPassword, function(isAuthenticated:boolean) {
+					if (isAuthenticated)
 						self.m_Model.GetUserData(self.m_Domain, function(dataset:any) {
 							self.m_Cryptor.Decrypt(msg.MasterPassword, dataset);
 								if (dataset.Username.length === 0 || dataset.Password.length === 0)
@@ -203,6 +205,25 @@ class ServerMessenger {
 						self.m_Port["popup"].postMessage({Error : "Wrong Master Password"})
 				});
 			}
+		});
+	}
+
+	Authenticate(Master_Password:string, callback:(isAuthenticated:boolean, dataset:any)=>any):void {
+		let hashed_pw = this.m_Cryptor.Hash(Master_Password);
+		this.m_Model.GetMainData(function(dataset:any) {
+			if (dataset.MainData.Hash == hashed_pw)
+				callback(true, dataset);
+			else
+				callback(false, dataset);
+		});
+	}
+
+	GetDecryptedUserData(Master_Password:string, callback:(dataset:any)=>any):void {
+		let self = this;
+		this.m_Model.GetAllUserData(function(dataset:any) {
+			for (let obj in dataset)
+				self.m_Cryptor.Decrypt(Master_Password, dataset[obj]) 
+			callback(dataset);
 		});
 	}
 }

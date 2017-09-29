@@ -51,17 +51,14 @@ var ServerMessenger = (function () {
         var self = this;
         port.onMessage.addListener(function (msg) {
             if (msg.MasterPassword) {
-                var hashed_pw_1 = self.m_Cryptor.Hash(msg.MasterPassword);
-                self.m_Model.GetMainData(function (dataset) {
-                    if (dataset.MainData.Hash == hashed_pw_1) {
+                self.Authenticate(msg.MasterPassword, function (isAuthenticated, dataset) {
+                    if (isAuthenticated) {
                         self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
                         self.m_Port["options"].postMessage({ Authenticated: { val: true } });
-                        self.m_Model.GetAllUserData(function (dataset2) {
-                            for (var obj in dataset2)
-                                self.m_Cryptor.Decrypt(msg.MasterPassword, dataset2[obj]);
-                            self.m_Model.GetGeneralSettings(function (dataset3) {
-                                self.m_Port["options"].postMessage({ Frequency: dataset3.GeneralSettings.Frequency });
-                                self.m_Port["options"].postMessage({ UserData: dataset2 });
+                        self.m_Model.GetGeneralSettings(function (dataset2) {
+                            self.m_Port["options"].postMessage({ Frequency: dataset2.GeneralSettings.Frequency });
+                            self.GetDecryptedUserData(msg.MasterPassword, function (dataset3) {
+                                self.m_Port["options"].postMessage({ UserData: dataset3 });
                             });
                         });
                     }
@@ -72,21 +69,20 @@ var ServerMessenger = (function () {
             }
             else if (msg.ChangeMasterPassword) {
                 var old_pw_1 = msg.ChangeMasterPassword.OldPassword;
-                var hashed_old_1 = self.m_Cryptor.Hash(old_pw_1);
                 var new_pw_1 = msg.ChangeMasterPassword.NewPassword;
-                self.m_Model.GetMainData(function (dataset) {
-                    if (dataset.MainData.Hash === hashed_old_1) {
+                self.Authenticate(old_pw_1, function (isAuthenticated, dataset) {
+                    if (isAuthenticated) {
                         var salt_old_1 = dataset.MainData.Salt;
                         var iv_old_1 = dataset.MainData.Iv;
                         self.m_Cryptor.MainSetup(new_pw_1, function (hashed_pw, salt, iv) {
                             self.m_Model.SaveMainData(hashed_pw, salt, iv);
-                            self.m_Model.GetAllUserData(function (dataset) {
-                                for (var obj in dataset) {
+                            self.m_Model.GetAllUserData(function (dataset2) {
+                                for (var obj in dataset2) {
                                     self.m_Cryptor.SetSaltAndIv(salt_old_1, iv_old_1);
-                                    self.m_Cryptor.Decrypt(old_pw_1, dataset[obj]);
+                                    self.m_Cryptor.Decrypt(old_pw_1, dataset2[obj]);
                                     self.m_Cryptor.SetSaltAndIv(salt, iv);
-                                    self.m_Cryptor.Encrypt(new_pw_1, dataset[obj]);
-                                    self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged);
+                                    self.m_Cryptor.Encrypt(new_pw_1, dataset2[obj]);
+                                    self.m_Model.SaveUserData(obj, dataset2[obj].Username, dataset2[obj].Password, dataset2[obj].LastChanged);
                                 }
                             });
                         });
@@ -114,7 +110,13 @@ var ServerMessenger = (function () {
                 self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
             }
             else if (msg.GeneralSettings) {
-                self.m_Model.SaveGeneralSettings(msg.GeneralSettings);
+                self.m_Model.SaveGeneralSettings(msg.GeneralSettings.Frequency);
+                self.GetDecryptedUserData(msg.GeneralSettings.MasterPassword, function (dataset) {
+                    if (dataset)
+                        self.m_Port["options"].postMessage({ UpdatedUserData: dataset });
+                    else
+                        self.m_Port["options"].postMessage({ Error: "Could not decrypt updated Userdata" });
+                });
             }
         });
     };
@@ -148,9 +150,8 @@ var ServerMessenger = (function () {
                 });
             }
             else if (msg.MasterPassword) {
-                var hashed_pw_2 = self.m_Cryptor.Hash(msg.MasterPassword);
-                self.m_Model.GetMainData(function (dataset) {
-                    if (dataset.MainData.Hash == hashed_pw_2)
+                self.Authenticate(msg.MasterPassword, function (isAuthenticated) {
+                    if (isAuthenticated)
                         self.m_Model.GetUserData(self.m_Domain, function (dataset) {
                             self.m_Cryptor.Decrypt(msg.MasterPassword, dataset);
                             if (dataset.Username.length === 0 || dataset.Password.length === 0)
@@ -162,6 +163,23 @@ var ServerMessenger = (function () {
                         self.m_Port["popup"].postMessage({ Error: "Wrong Master Password" });
                 });
             }
+        });
+    };
+    ServerMessenger.prototype.Authenticate = function (Master_Password, callback) {
+        var hashed_pw = this.m_Cryptor.Hash(Master_Password);
+        this.m_Model.GetMainData(function (dataset) {
+            if (dataset.MainData.Hash == hashed_pw)
+                callback(true, dataset);
+            else
+                callback(false, dataset);
+        });
+    };
+    ServerMessenger.prototype.GetDecryptedUserData = function (Master_Password, callback) {
+        var self = this;
+        this.m_Model.GetAllUserData(function (dataset) {
+            for (var obj in dataset)
+                self.m_Cryptor.Decrypt(Master_Password, dataset[obj]);
+            callback(dataset);
         });
     };
     return ServerMessenger;

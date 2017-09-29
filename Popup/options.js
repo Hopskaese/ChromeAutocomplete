@@ -43,6 +43,10 @@ var OptionsMessenger = (function () {
             else if (msg.Frequency) {
                 self.m_Manager.SetFrequency(msg.Frequency);
             }
+            else if (msg.UpdatedUserData) {
+                self.m_Manager.SetSuccess("Generalsettings updated");
+                self.m_Manager.SetupUserData(msg.UpdatedUserData);
+            }
         });
     };
     OptionsMessenger.prototype.PostMessage = function (input) {
@@ -70,8 +74,14 @@ var OptionsManager = (function () {
             });
             $('#btn-save-generalsettings').on("click", function () {
                 var frequency = $('#frequency-select').val();
-                if (frequency)
-                    self.m_Messenger.PostMessage({ GeneralSettings: frequency });
+                if (frequency) {
+                    self.SetFrequency(frequency);
+                    $("#data-table-body").empty();
+                    self.m_Messenger.PostMessage({ GeneralSettings: { Frequency: frequency, MasterPassword: self.m_Password } });
+                }
+                else {
+                    self.SetError("Can obtain val from select element");
+                }
             });
             $('#btn-change').on("click", function () {
                 var old_pw = $('#password-old-input').val();
@@ -239,7 +249,6 @@ var OptionsManager = (function () {
         var time_string = "";
         for (var obj in dataset) {
             time_left = (time - dataset[obj].LastChanged) / 1000 / 60 / 60 / 24;
-            console.log(time_left);
             time_left = this.m_Frequency - time_left;
             if ((time_left / 30) == 1)
                 time_string = "1 Month";

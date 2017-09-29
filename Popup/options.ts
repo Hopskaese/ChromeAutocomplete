@@ -56,6 +56,11 @@ class OptionsMessenger {
     	{
     		self.m_Manager.SetFrequency(msg.Frequency);
     	}
+    	else if (msg.UpdatedUserData)
+    	{
+    		self.m_Manager.SetSuccess("Generalsettings updated");
+    		self.m_Manager.SetupUserData(msg.UpdatedUserData);
+    	}
     });
   }
   PostMessage(input:object):void {
@@ -89,7 +94,15 @@ class OptionsManager {
 			$('#btn-save-generalsettings').on("click", function() {
 				let frequency = $('#frequency-select').val();
 				if (frequency)
-					self.m_Messenger.PostMessage({GeneralSettings : frequency});
+				{
+					self.SetFrequency(frequency);
+					$("#data-table-body").empty();
+					self.m_Messenger.PostMessage({GeneralSettings : {Frequency :frequency, MasterPassword: self.m_Password}});
+				}
+				else
+				{
+					self.SetError("Can obtain val from select element");
+				}
 			});
 			$('#btn-change').on("click", function() {
 				let old_pw = $('#password-old-input').val();
@@ -149,7 +162,7 @@ class OptionsManager {
 					$('#change-masterpassword').hide();
 
 				$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#general-settings').show();});
-				self.m_State = States.ST_GENERALSETTINGS;
+					self.m_State = States.ST_GENERALSETTINGS;
 			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");

@@ -54,12 +54,12 @@ class Model {
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				return;
+				callback(null);
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("Could not find any records");
-				return;
+				callback(null);
 			}
 			for (let key in dataset)
 				if (key == "MainData" || key == "GeneralSettings")
