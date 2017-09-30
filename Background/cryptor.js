@@ -78,6 +78,10 @@ var Cryptor = (function () {
         dataset.Password = dataset.Password.toString();
     };
     Cryptor.prototype.Decrypt = function (password, dataset) {
+        if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0) {
+            console.log("Salt or Iv error");
+            return;
+        }
         var key = CryptoJS.PBKDF2(password, this.m_Salt, {
             keySize: this.m_KeySize / 32,
             iterations: this.m_Iterations

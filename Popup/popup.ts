@@ -38,6 +38,10 @@ class ClientMessenger {
       {
         self.m_Manager.SetError(msg.Error);
       }
+      else if (msg.Success)
+      {
+        self.m_Manager.SetSuccess(msg.Success);
+      }
     });
   } 
   PostMessage(input:object):void {

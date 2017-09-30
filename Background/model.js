@@ -4,13 +4,16 @@ var Model = (function () {
     function Model() {
         this.m_CurDataset = null;
     }
-    Model.prototype.SaveUserData = function (domain, username, password, lastchanged) {
+    Model.prototype.SaveUserData = function (domain, username, password, lastchanged, callback) {
         var credentials = { "Username": username, "Password": password, "LastChanged": lastchanged };
         chrome.storage.local.set((_a = {}, _a[domain] = credentials, _a), function () {
             var lasterror = chrome.runtime.lastError;
-            if (lasterror)
-                console.log("Last error" + lasterror.message);
+            if (lasterror) {
+                console.log("Error while trying to save UserData: " + lasterror.message);
+                callback(false);
+            }
         });
+        callback(true);
         console.log("Userdata has been saved");
         var _a;
     };
@@ -50,10 +53,12 @@ var Model = (function () {
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
                 callback(null);
+                return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("Could not find any records");
                 callback(null);
+                return;
             }
             for (var key in dataset)
                 if (key == "MainData" || key == "GeneralSettings")

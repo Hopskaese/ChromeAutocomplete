@@ -96,6 +96,14 @@ class Cryptor {
 	}
 
 	Decrypt(password:string, dataset:any):void {
+
+
+		if (!this.m_Iv || !this.m_Salt || this.m_Iv.length === 0 || this.m_Salt.length === 0)
+		{
+			console.log("Salt or Iv error");
+			return;
+		}
+		
 		let key = CryptoJS.PBKDF2(password, this.m_Salt, {
 			keySize: this.m_KeySize/32,
 			iterations: this.m_Iterations

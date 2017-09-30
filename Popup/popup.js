@@ -1,5 +1,14 @@
 /// <reference path="../Include/index.d.ts"/>
 /// <reference path="../Include/index2.d.ts"/>
+//ADD MORE STATES, CHANGE STATES IN FUNCTIONS IN OPTIONS TOO.
+var States;
+(function (States) {
+    States[States["ST_NONE"] = 0] = "ST_NONE";
+    States[States["ST_MASTERSETUP"] = 1] = "ST_MASTERSETUP";
+    States[States["ST_INFOSETUP"] = 2] = "ST_INFOSETUP";
+    States[States["ST_SETUPAUTH"] = 3] = "ST_SETUPAUTH";
+    States[States["ST_AUTH"] = 4] = "ST_AUTH";
+})(States || (States = {}));
 var ClientMessenger = (function () {
     function ClientMessenger(manager) {
         this.m_Manager = manager;
@@ -21,6 +30,9 @@ var ClientMessenger = (function () {
             else if (msg.Error) {
                 self.m_Manager.SetError(msg.Error);
             }
+            else if (msg.Success) {
+                self.m_Manager.SetSuccess(msg.Success);
+            }
         });
     };
     ClientMessenger.prototype.PostMessage = function (input) {
@@ -32,6 +44,7 @@ var PopupManager = (function () {
     function PopupManager() {
         this.m_Messenger = new ClientMessenger(this);
         this.InitListeners();
+        this.m_State = States.ST_MASTERSETUP;
     }
     PopupManager.prototype.InitListeners = function () {
         var self = this;
@@ -49,11 +62,24 @@ var PopupManager = (function () {
                 self.m_Password = $("#master-password-input").val();
                 $("#new-credentials").show();
                 $("#master-password").hide();
+                self.m_State = States.ST_INFOSETUP;
             });
             $("#b-login").on("click", function () {
                 var password = $("#master-password-input").val();
                 if (password)
                     self.m_Messenger.PostMessage({ MasterPassword: password });
+            });
+            $(document).keyup(function (event) {
+                if (event.keyCode == 13) {
+                    if (self.m_State === States.ST_MASTERSETUP)
+                        $("#post-set-master-password").click();
+                    else if (self.m_State === States.ST_INFOSETUP)
+                        $("#post-info").click();
+                    else if (self.m_State === States.ST_SETUPAUTH)
+                        $("#b-setup").click();
+                    else if (self.m_State === States.ST_AUTH)
+                        $("#b-login").click();
+                }
             });
             $("#post-set-master-password").on("click", function () {
                 var password = $("#set-master-password-input").val();
@@ -61,6 +87,7 @@ var PopupManager = (function () {
                     self.m_Messenger.PostMessage({ MasterPasswordSetup: password });
                     $("#set-master-password").fadeOut(500, function () {
                         self.SetLayout(false);
+                        self.m_State = States.ST_INFOSETUP;
                     });
                 }
             });
@@ -82,15 +109,17 @@ var PopupManager = (function () {
     };
     PopupManager.prototype.SetLayout = function (doesExist) {
         $('#master-password').show();
-        //document.getElementById("b-login").style.display = doesExist ? "block" : "none";
-        //document.getElementById("b-setup").style.display = doesExist ? "none" : "block";
         doesExist ? $("#b-login").show() : $('#b-login').hide();
         doesExist ? $("#b-setup").hide() : $('#b-setup').show();
         var message = "";
-        if (doesExist)
+        if (doesExist) {
+            this.m_State = States.ST_AUTH;
             message = "Please enter your MasterPassword to log in.";
-        else
+        }
+        else {
+            this.m_State = States.ST_SETUPAUTH;
             message = "Please enter your MasterPassword to set up your data.";
+        }
         $("#master-password-message").text(message);
     };
     return PopupManager;
