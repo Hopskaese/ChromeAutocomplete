@@ -5,7 +5,9 @@ enum States {
 	ST_NONE,
 	ST_LOGIN,
 	ST_CHANGEPW,
-	ST_GENERALSETTINGS
+	ST_GENERALSETTINGS,
+	ST_MAINPAGE,
+	ST_BACKUP
 }
 
 class OptionsMessenger {
@@ -73,7 +75,8 @@ class OptionsManager {
 	private m_isAuthenticated:boolean;
 	private m_Password :string;
 	private m_Frequency :number;
-	private m_State :number;
+	private m_State :States;
+	private m_StateElements: object;
 	constructor() {
 		this.m_Messenger = new OptionsMessenger(this);
 		this.InitListeners();
@@ -81,10 +84,17 @@ class OptionsManager {
 		this.m_Password = "";
 		this.m_Frequency = 0;
 		this.m_State = States.ST_LOGIN;
+		this.m_StateElements = {};
 	}
 	InitListeners():void {
 		let self = this;
-		$(document).ready(function() {
+		$(document).ready(function() {	
+			self.m_StateElements[States.ST_MAINPAGE] = $("#data-table").add('.data-table-row');
+			self.m_StateElements[States.ST_GENERALSETTINGS] = $("#general-settings");
+			self.m_StateElements[States.ST_CHANGEPW] = $("#change-masterpassword");
+			self.m_StateElements[States.ST_BACKUP] = $("#backup");
+			self.m_StateElements[States.ST_LOGIN] = $("#authentication");
+
 			$('#btn-authenticate').on("click", function() {
 				let password = $("#master-password-input").val();
 				self.m_Password = password;
@@ -123,34 +133,20 @@ class OptionsManager {
 
 			});
 			$("#btn-home").on("click", function() {
-				if (self.m_State === States.ST_GENERALSETTINGS)
-					$('#general-settings').fadeOut(1500, function() {
-						$('#data-table').add('.data-table-row').show();
-						self.m_State = States.ST_NONE;
-					});
-				else if (self.m_State === States.ST_CHANGEPW)
-					$('#change-masterpassword').fadeOut(1500, function() {
-						if (self.m_isAuthenticated)
-						{
-							$('#data-table').add('.data-table-row').show();
-							self.m_State = States.ST_NONE;
-						}
-						else
-						{
-							$('#authentication').show();
-							self.m_State = States.ST_LOGIN;
-						}
-					});
+				if (self.m_isAuthenticated)
+				{
+					self.SetPageToState(States.ST_MAINPAGE);
+					self.SetState(States.ST_MAINPAGE);
+				}
+				else
+				{
+					self.SetPageToState(States.ST_LOGIN);
+					self.SetState(States.ST_LOGIN);
+				}
 			});
 			$('#change-masterpassword-link').on("click", function() {
-				if($('#general-settings').is(':visible'))
-					$('#general-settings').hide();
-
-				self.m_isAuthenticated ? 
-					$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#change-masterpassword').show();}) :
-					$('#authentication').fadeOut(1500, function() {$('#change-masterpassword').show();}) 
-
-					self.m_State = States.ST_CHANGEPW;
+				self.SetPageToState(States.ST_CHANGEPW);
+				self.SetState(States.ST_CHANGEPW);
 			});
 			$('#general-settings-link').on("click", function() {
 				if (!self.m_isAuthenticated)
@@ -158,11 +154,13 @@ class OptionsManager {
 					self.SetError("You have to be logged in to change general settings!");
 					return;
 				}
-				if ($('#change-masterpassword').is(':visible'))
-					$('#change-masterpassword').hide();
-
-				$('#data-table').add('.data-table-row').fadeOut(1500, function() {$('#general-settings').show();});
-					self.m_State = States.ST_GENERALSETTINGS;
+				
+				self.SetPageToState(States.ST_GENERALSETTINGS);
+				self.SetState(States.ST_GENERALSETTINGS);
+			});
+			$('#download-backup-link').on("click", function() {
+				self.SetPageToState(States.ST_BACKUP);
+				self.SetState(States.ST_BACKUP);
 			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");
@@ -261,16 +259,16 @@ class OptionsManager {
 	SetAuthenticated():void {
 		this.m_isAuthenticated = true;
 	}
+	SetState(state:States):void {
+		this.m_State = state;
+	}
 	SetupAuthenticated():void {
-		$('#error-messages').hide();
 		$('#locked').hide();
 		$('#unlocked').show();
-		$('#authentication').fadeOut(1500, function() {
-			$('#data-table').show();
-		});
 		$('#auth-no').hide();
 		$('#auth-yes').show();
-		this.m_State = States.ST_NONE;
+		this.SetPageToState(States.ST_MAINPAGE);
+		this.SetState(States.ST_MAINPAGE);
 	}
 	SetError(error:string):void {
 		$('#error-message').text(error);
@@ -281,6 +279,15 @@ class OptionsManager {
 		$('#success-message').text(success);
 		$('#success-messages').show();
 		$('#success-messages').fadeOut(3000);
+	}
+	SetPageToState(state): void {
+		if (this.m_State == state)
+			return;
+
+		let self = this;
+		this.m_StateElements[this.m_State].fadeOut(2000, function() {
+			self.m_StateElements[state].show();
+		});
 	}
 	SetupUserData(dataset:any)
 	{

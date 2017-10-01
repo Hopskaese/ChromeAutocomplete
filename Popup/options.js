@@ -6,6 +6,8 @@ var States;
     States[States["ST_LOGIN"] = 1] = "ST_LOGIN";
     States[States["ST_CHANGEPW"] = 2] = "ST_CHANGEPW";
     States[States["ST_GENERALSETTINGS"] = 3] = "ST_GENERALSETTINGS";
+    States[States["ST_MAINPAGE"] = 4] = "ST_MAINPAGE";
+    States[States["ST_BACKUP"] = 5] = "ST_BACKUP";
 })(States || (States = {}));
 var OptionsMessenger = (function () {
     function OptionsMessenger(manager) {
@@ -62,10 +64,16 @@ var OptionsManager = (function () {
         this.m_Password = "";
         this.m_Frequency = 0;
         this.m_State = States.ST_LOGIN;
+        this.m_StateElements = {};
     }
     OptionsManager.prototype.InitListeners = function () {
         var self = this;
         $(document).ready(function () {
+            self.m_StateElements[States.ST_MAINPAGE] = $("#data-table").add('.data-table-row');
+            self.m_StateElements[States.ST_GENERALSETTINGS] = $("#general-settings");
+            self.m_StateElements[States.ST_CHANGEPW] = $("#change-masterpassword");
+            self.m_StateElements[States.ST_BACKUP] = $("#backup");
+            self.m_StateElements[States.ST_LOGIN] = $("#authentication");
             $('#btn-authenticate').on("click", function () {
                 var password = $("#master-password-input").val();
                 self.m_Password = password;
@@ -98,40 +106,30 @@ var OptionsManager = (function () {
                 }
             });
             $("#btn-home").on("click", function () {
-                if (self.m_State === States.ST_GENERALSETTINGS)
-                    $('#general-settings').fadeOut(1500, function () {
-                        $('#data-table').add('.data-table-row').show();
-                        self.m_State = States.ST_NONE;
-                    });
-                else if (self.m_State === States.ST_CHANGEPW)
-                    $('#change-masterpassword').fadeOut(1500, function () {
-                        if (self.m_isAuthenticated) {
-                            $('#data-table').add('.data-table-row').show();
-                            self.m_State = States.ST_NONE;
-                        }
-                        else {
-                            $('#authentication').show();
-                            self.m_State = States.ST_LOGIN;
-                        }
-                    });
+                if (self.m_isAuthenticated) {
+                    self.SetPageToState(States.ST_MAINPAGE);
+                    self.SetState(States.ST_MAINPAGE);
+                }
+                else {
+                    self.SetPageToState(States.ST_LOGIN);
+                    self.SetState(States.ST_LOGIN);
+                }
             });
             $('#change-masterpassword-link').on("click", function () {
-                if ($('#general-settings').is(':visible'))
-                    $('#general-settings').hide();
-                self.m_isAuthenticated ?
-                    $('#data-table').add('.data-table-row').fadeOut(1500, function () { $('#change-masterpassword').show(); }) :
-                    $('#authentication').fadeOut(1500, function () { $('#change-masterpassword').show(); });
-                self.m_State = States.ST_CHANGEPW;
+                self.SetPageToState(States.ST_CHANGEPW);
+                self.SetState(States.ST_CHANGEPW);
             });
             $('#general-settings-link').on("click", function () {
                 if (!self.m_isAuthenticated) {
                     self.SetError("You have to be logged in to change general settings!");
                     return;
                 }
-                if ($('#change-masterpassword').is(':visible'))
-                    $('#change-masterpassword').hide();
-                $('#data-table').add('.data-table-row').fadeOut(1500, function () { $('#general-settings').show(); });
-                self.m_State = States.ST_GENERALSETTINGS;
+                self.SetPageToState(States.ST_GENERALSETTINGS);
+                self.SetState(States.ST_GENERALSETTINGS);
+            });
+            $('#download-backup-link').on("click", function () {
+                self.SetPageToState(States.ST_BACKUP);
+                self.SetState(States.ST_BACKUP);
             });
             $('#data-table').on("click", '[id^=change]', function () {
                 var id = $(this).attr("id");
@@ -220,16 +218,16 @@ var OptionsManager = (function () {
     OptionsManager.prototype.SetAuthenticated = function () {
         this.m_isAuthenticated = true;
     };
+    OptionsManager.prototype.SetState = function (state) {
+        this.m_State = state;
+    };
     OptionsManager.prototype.SetupAuthenticated = function () {
-        $('#error-messages').hide();
         $('#locked').hide();
         $('#unlocked').show();
-        $('#authentication').fadeOut(1500, function () {
-            $('#data-table').show();
-        });
         $('#auth-no').hide();
         $('#auth-yes').show();
-        this.m_State = States.ST_NONE;
+        this.SetPageToState(States.ST_MAINPAGE);
+        this.SetState(States.ST_MAINPAGE);
     };
     OptionsManager.prototype.SetError = function (error) {
         $('#error-message').text(error);
@@ -240,6 +238,14 @@ var OptionsManager = (function () {
         $('#success-message').text(success);
         $('#success-messages').show();
         $('#success-messages').fadeOut(3000);
+    };
+    OptionsManager.prototype.SetPageToState = function (state) {
+        if (this.m_State == state)
+            return;
+        var self = this;
+        this.m_StateElements[this.m_State].fadeOut(2000, function () {
+            self.m_StateElements[state].show();
+        });
     };
     OptionsManager.prototype.SetupUserData = function (dataset) {
         var cnt = 0;
