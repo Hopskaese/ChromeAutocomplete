@@ -33,7 +33,7 @@ var Model = (function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror)
                 console.log("Last error" + lasterror.message);
-            console.log("Main data has been saved");
+            console.log("GeneralSettings have been saved");
         });
     };
     Model.prototype.DeleteRecord = function (domain, callback) {
@@ -47,26 +47,26 @@ var Model = (function () {
             callback();
         });
     };
-    Model.prototype.GetAllUserData = function (callback) {
+    Model.prototype.GetAllUserData = function (success_callback, error_callback) {
         chrome.storage.local.get(null, function (dataset) {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
+                error_callback();
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("Could not find any records");
-                callback(null);
+                error_callback();
                 return;
             }
             for (var key in dataset)
                 if (key == "MainData" || key == "GeneralSettings")
                     delete dataset[key];
-            callback(dataset);
+            success_callback(dataset);
         });
     };
-    Model.prototype.GetUserData = function (domain, callback) {
+    Model.prototype.GetUserData = function (domain, success_callback, error_callback) {
         var self = this;
         console.log("Trying to get data for: " + domain);
         chrome.storage.local.get([domain], function (dataset) {
@@ -74,49 +74,49 @@ var Model = (function () {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
+                error_callback();
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                callback(null);
+                error_callback();
                 return;
             }
             console.log("Found record. Returning");
             self.m_CurDataset = dataset[domain];
-            callback(dataset[domain]);
+            success_callback(dataset[domain]);
         });
     };
-    Model.prototype.GetMainData = function (callback) {
+    Model.prototype.GetMainData = function (success_callback, error_callback) {
         chrome.storage.local.get("MainData", function (dataset) {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
+                error_callback();
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                callback(null);
+                error_callback();
                 return;
             }
-            callback(dataset);
+            success_callback(dataset);
         });
     };
-    Model.prototype.GetGeneralSettings = function (callback) {
+    Model.prototype.GetGeneralSettings = function (success_callback, error_callback) {
         chrome.storage.local.get("GeneralSettings", function (dataset) {
             var lasterror = chrome.runtime.lastError;
             if (lasterror) {
                 console.log("Error retrieving value from storage" + lasterror.message);
-                callback(null);
+                error_callback();
                 return;
             }
             else if (Object.keys(dataset).length == 0) {
                 console.log("record does not exist");
-                callback(null);
+                error_callback();
                 return;
             }
-            callback(dataset);
+            success_callback(dataset);
         });
     };
     Model.prototype.GetCurDataset = function () {

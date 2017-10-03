@@ -52,7 +52,7 @@ class OptionsMessenger {
     	}
     	else if (msg.GenerateRandom)
     	{
-    		self.m_Manager.SetTextInputValue(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
+    		self.m_Manager.SetGenerated(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
     	}
     	else if (msg.Frequency)
     	{
@@ -119,18 +119,11 @@ class OptionsManager {
 				let new_pw = $('#password-new-input').val();
 				let new_pw2 = $('#password-new-input2').val();
 				if (!old_pw || !new_pw || !new_pw2)
-				{
 					self.SetError("Please fill in all fields!");
-				}
 				else if (new_pw != new_pw2)
-				{
 					self.SetError("New Password inputs don't match!");
-				}
 				else 
-				{
 					self.m_Messenger.PostMessage({ChangeMasterPassword: {OldPassword: old_pw, NewPassword: new_pw}});
-				}
-
 			});
 			$("#btn-home").on("click", function() {
 				if (self.m_isAuthenticated)
@@ -152,25 +145,47 @@ class OptionsManager {
 				if (!self.m_isAuthenticated)
 				{
 					self.SetError("You have to be logged in to change general settings!");
-					return;
 				}
-				
-				self.SetPageToState(States.ST_GENERALSETTINGS);
-				self.SetState(States.ST_GENERALSETTINGS);
+				else
+				{
+					self.SetPageToState(States.ST_GENERALSETTINGS);
+					self.SetState(States.ST_GENERALSETTINGS);
+				}
 			});
-			$('#download-backup-link').on("click", function() {
+			$('#load-backup-link').on("click", function() {
 				self.SetPageToState(States.ST_BACKUP);
 				self.SetState(States.ST_BACKUP);
 			});
+			$('#btn-download-backup').on("click", function() {
+				self.m_Messenger.PostMessage({CreateBackup : "placeholder"});
+			});
+			$('#btn-upload-backup').on("click", function() {
+				let file;
+				let fileReader;
+				if (!(file = (<HTMLInputElement>document.getElementById("backup-input")).files[0]))
+					self.SetError("File input cant be empty!");
+				else
+				{
+					fileReader = new FileReader();
+					fileReader.onload = function() {
+						self.m_Messenger.PostMessage({LoadBackup: fileReader.result});
+					}
+					fileReader.onerror = function(e:any) {
+						self.SetError(e.toString());
+					}
+
+					fileReader.readAsText(file);
+				}
+			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");
-				id = id.substr(6, id.length);
+				id = id.substr("change".length, id.length);
 				$(this).hide();
 				self.ChangeTdToTextInput(id);
 			});
 			$('#data-table').on("click", '[id^=save]', function() {
 				let id:string = $(this).attr("id");
-				id = id.substr(4, id.length);
+				id = id.substr("save".length, id.length);
 				let new_username = $('#td-input-username'+id).val();
 				let new_password = $('#td-input-password'+id).val();
 				let domain 		 = $('#td-domain'+id).text();
@@ -186,13 +201,13 @@ class OptionsManager {
 			});
 			$('#data-table').on("click", '[id^=generate-username]', function() {
 				let id_element:string = $(this).attr("id");
-				id_element = id_element.substr(17, id_element.length);
+				id_element = id_element.substr("generate-username".length, id_element.length);
 
 				self.m_Messenger.PostMessage({GenerateRandom: {id: id_element, type: "username"}});
 			});
 			$('#data-table').on("click", '[id^=generate-password]', function() {
 				let id_element:string = $(this).attr("id");
-				id_element = id_element.substr(17, id_element.length);
+				id_element = id_element.substr("generate-password".length, id_element.length);
 
 				self.m_Messenger.PostMessage({GenerateRandom: {id: id_element, type: "password"}});
 			});
@@ -246,7 +261,7 @@ class OptionsManager {
 		$('#td-password'+id).text(password);
 		$('#td-button'+id).append('<button type="button" class="btn btn-sm btn-primary" id="change'+id+'">Change</button>');
 	}
-	SetTextInputValue(id:string, type:string, value:string):void {
+	SetGenerated(id:string, type:string, value:string):void {
 		if (type == "username")
 			$('#td-input-username'+id).val(value);
 		else if (type == "password")
@@ -285,12 +300,11 @@ class OptionsManager {
 			return;
 
 		let self = this;
-		this.m_StateElements[this.m_State].fadeOut(2000, function() {
+		this.m_StateElements[this.m_State].fadeOut(1250, function() {
 			self.m_StateElements[state].show();
 		});
 	}
-	SetupUserData(dataset:any)
-	{
+	SetupUserData(dataset:any) {
 		let cnt = 0;
 		let date = new Date();
 		let time = date.getTime();

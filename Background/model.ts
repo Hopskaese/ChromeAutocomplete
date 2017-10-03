@@ -37,7 +37,7 @@ class Model {
 			if (lasterror)
 				console.log("Last error" + lasterror.message);
 
-			console.log("Main data has been saved");
+			console.log("GeneralSettings have been saved");
 		});
 	}
 	DeleteRecord(domain:string, callback:()=>any):void {
@@ -52,29 +52,29 @@ class Model {
 			callback();
 		});
 	}
-	GetAllUserData(callback:(data:object)=>any): void {
+	GetAllUserData(success_callback:(MainData:object)=>any, error_callback:()=>any): void {
 		chrome.storage.local.get(null, function(dataset:any) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
+				error_callback();
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("Could not find any records");
-				callback(null);
+				error_callback();
 				return;
 			}
 			for (let key in dataset)
 				if (key == "MainData" || key == "GeneralSettings")
 					delete dataset[key];
 
-			callback(dataset);
+			success_callback(dataset);
 		});
 	}
-	GetUserData(domain:string, callback:(data:object)=>any): void {
+	GetUserData(domain:string, success_callback:(MainData:object)=>any, error_callback:()=>any): void {
 		let self = this;
 		console.log("Trying to get data for: " + domain);
 		chrome.storage.local.get([domain], function(dataset:any) {
@@ -83,54 +83,54 @@ class Model {
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
+				error_callback();
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
-				callback(null);
+				error_callback();
 				return;
 			}
 			console.log("Found record. Returning");
 			self.m_CurDataset = dataset[domain];
-			callback(dataset[domain]);
+			success_callback(dataset[domain]);
 		});
 	}
-	GetMainData(callback:(MainData:object)=>any): void {
+	GetMainData(success_callback:(MainData:object)=>any, error_callback:()=>any): void {
 		chrome.storage.local.get("MainData", function(dataset) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
+				error_callback();
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
-				callback(null);
+				error_callback();
 				return;
 			}
-			callback(dataset);
+			success_callback(dataset);
 		});
 	}
-	GetGeneralSettings(callback:(MainData:object)=>any):void {
+	GetGeneralSettings(success_callback:(MainData:object)=>any, error_callback:()=>any):void {
 		chrome.storage.local.get("GeneralSettings", function(dataset) {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error retrieving value from storage" + lasterror.message);
-				callback(null);
+				error_callback();
 				return;
 			}
 			else if (Object.keys(dataset).length == 0) 
 			{
 				console.log("record does not exist");
-				callback(null);
+				error_callback();
 				return;
 			}
-			callback(dataset);
+			success_callback(dataset);
 		});
 	}
 	GetCurDataset(): any {

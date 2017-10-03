@@ -40,7 +40,7 @@ var OptionsMessenger = (function () {
                 self.m_Manager.ChangeTextInputToTd(msg.ResetInput.val);
             }
             else if (msg.GenerateRandom) {
-                self.m_Manager.SetTextInputValue(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
+                self.m_Manager.SetGenerated(msg.GenerateRandom.id, msg.GenerateRandom.type, msg.GenerateRandom.val);
             }
             else if (msg.Frequency) {
                 self.m_Manager.SetFrequency(msg.Frequency);
@@ -95,15 +95,12 @@ var OptionsManager = (function () {
                 var old_pw = $('#password-old-input').val();
                 var new_pw = $('#password-new-input').val();
                 var new_pw2 = $('#password-new-input2').val();
-                if (!old_pw || !new_pw || !new_pw2) {
+                if (!old_pw || !new_pw || !new_pw2)
                     self.SetError("Please fill in all fields!");
-                }
-                else if (new_pw != new_pw2) {
+                else if (new_pw != new_pw2)
                     self.SetError("New Password inputs don't match!");
-                }
-                else {
+                else
                     self.m_Messenger.PostMessage({ ChangeMasterPassword: { OldPassword: old_pw, NewPassword: new_pw } });
-                }
             });
             $("#btn-home").on("click", function () {
                 if (self.m_isAuthenticated) {
@@ -122,24 +119,44 @@ var OptionsManager = (function () {
             $('#general-settings-link').on("click", function () {
                 if (!self.m_isAuthenticated) {
                     self.SetError("You have to be logged in to change general settings!");
-                    return;
                 }
-                self.SetPageToState(States.ST_GENERALSETTINGS);
-                self.SetState(States.ST_GENERALSETTINGS);
+                else {
+                    self.SetPageToState(States.ST_GENERALSETTINGS);
+                    self.SetState(States.ST_GENERALSETTINGS);
+                }
             });
-            $('#download-backup-link').on("click", function () {
+            $('#load-backup-link').on("click", function () {
                 self.SetPageToState(States.ST_BACKUP);
                 self.SetState(States.ST_BACKUP);
             });
+            $('#btn-download-backup').on("click", function () {
+                self.m_Messenger.PostMessage({ CreateBackup: "placeholder" });
+            });
+            $('#btn-upload-backup').on("click", function () {
+                var file;
+                var fileReader;
+                if (!(file = document.getElementById("backup-input").files[0]))
+                    self.SetError("File input cant be empty!");
+                else {
+                    fileReader = new FileReader();
+                    fileReader.onload = function () {
+                        self.m_Messenger.PostMessage({ LoadBackup: fileReader.result });
+                    };
+                    fileReader.onerror = function (e) {
+                        self.SetError(e.toString());
+                    };
+                    fileReader.readAsText(file);
+                }
+            });
             $('#data-table').on("click", '[id^=change]', function () {
                 var id = $(this).attr("id");
-                id = id.substr(6, id.length);
+                id = id.substr("change".length, id.length);
                 $(this).hide();
                 self.ChangeTdToTextInput(id);
             });
             $('#data-table').on("click", '[id^=save]', function () {
                 var id = $(this).attr("id");
-                id = id.substr(4, id.length);
+                id = id.substr("save".length, id.length);
                 var new_username = $('#td-input-username' + id).val();
                 var new_password = $('#td-input-password' + id).val();
                 var domain = $('#td-domain' + id).text();
@@ -154,12 +171,12 @@ var OptionsManager = (function () {
             });
             $('#data-table').on("click", '[id^=generate-username]', function () {
                 var id_element = $(this).attr("id");
-                id_element = id_element.substr(17, id_element.length);
+                id_element = id_element.substr("generate-username".length, id_element.length);
                 self.m_Messenger.PostMessage({ GenerateRandom: { id: id_element, type: "username" } });
             });
             $('#data-table').on("click", '[id^=generate-password]', function () {
                 var id_element = $(this).attr("id");
-                id_element = id_element.substr(17, id_element.length);
+                id_element = id_element.substr("generate-password".length, id_element.length);
                 self.m_Messenger.PostMessage({ GenerateRandom: { id: id_element, type: "password" } });
             });
             $(document).keyup(function (event) {
@@ -206,7 +223,7 @@ var OptionsManager = (function () {
         $('#td-password' + id).text(password);
         $('#td-button' + id).append('<button type="button" class="btn btn-sm btn-primary" id="change' + id + '">Change</button>');
     };
-    OptionsManager.prototype.SetTextInputValue = function (id, type, value) {
+    OptionsManager.prototype.SetGenerated = function (id, type, value) {
         if (type == "username")
             $('#td-input-username' + id).val(value);
         else if (type == "password")
@@ -243,7 +260,7 @@ var OptionsManager = (function () {
         if (this.m_State == state)
             return;
         var self = this;
-        this.m_StateElements[this.m_State].fadeOut(2000, function () {
+        this.m_StateElements[this.m_State].fadeOut(1250, function () {
             self.m_StateElements[state].show();
         });
     };

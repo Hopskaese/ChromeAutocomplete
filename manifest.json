@@ -20,6 +20,6 @@
     }
   ],
   "permissions": [
-    "tabs", "http://*/*", "https://*/*",  "storage"
+    "tabs", "http://*/*", "https://*/*",  "storage", "downloads"
   ]
 }

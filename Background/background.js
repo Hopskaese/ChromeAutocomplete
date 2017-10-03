@@ -25,20 +25,16 @@ var ServerMessenger = (function () {
                     return;
                 }
                 self.m_Model.GetMainData(function (dataset) {
-                    if (dataset == null) {
-                        self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
+                    self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
+                    if (self.m_Domain) {
+                        self.m_Model.GetUserData(self.m_Domain, function (dataset) {
+                            self.m_Port["popup"].postMessage({ DomainExists: { val: true } });
+                        }, function () {
+                            self.m_Port["popup"].postMessage({ DomainExists: { val: false } });
+                        });
                     }
-                    else {
-                        self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
-                        var doesExist_1 = false;
-                        if (self.m_Domain) {
-                            self.m_Model.GetUserData(self.m_Domain, function (dataset) {
-                                if (dataset)
-                                    doesExist_1 = true;
-                                self.m_Port["popup"].postMessage({ DomainExists: { val: doesExist_1 } });
-                            });
-                        }
-                    }
+                }, function () {
+                    self.m_Port["popup"].postMessage({ isNotSetup: "placeholder" });
                 });
             }
             else if (port.name == "options") {
@@ -56,16 +52,15 @@ var ServerMessenger = (function () {
                         self.m_Cryptor.SetSaltAndIv(dataset.MainData.Salt, dataset.MainData.Iv);
                         self.m_Port["options"].postMessage({ Authenticated: { val: true } });
                         self.m_Model.GetGeneralSettings(function (dataset2) {
-                            if (dataset)
-                                self.m_Port["options"].postMessage({ Frequency: dataset2.GeneralSettings.Frequency });
-                            else
-                                self.m_Port["options"].postMessage({ Error: "Could not retrieve Frequency, default value (0) will be used to calculate remaining." });
+                            self.m_Port["options"].postMessage({ Frequency: dataset2.GeneralSettings.Frequency });
                             self.GetDecryptedUserData(msg.MasterPassword, function (dataset3) {
                                 if (dataset3)
                                     self.m_Port["options"].postMessage({ UserData: dataset3 });
                                 else
                                     self.m_Port["options"].postMessage({ Error: "Could not load or decrypt UserData" });
                             });
+                        }, function () {
+                            self.m_Port["options"].postMessage({ Error: "Could not retrieve Frequency, default value (0) will be used to calculate remaining." });
                         });
                     }
                     else {
@@ -84,27 +79,27 @@ var ServerMessenger = (function () {
                         var iv_old_1 = dataset.MainData.Iv;
                         var cnt = 0;
                         self.m_Cryptor.MainSetup(new_pw_1, function (hashed_pw, salt_new, iv_new) {
-                            self.m_Model.GetAllUserData(function (dataset2) {
-                                if (!dataset2) {
+                            self.m_Model.GetAllUserData(function (dataset_UserData) {
+                                if (!dataset_UserData) {
                                     self.m_Port["options"].postMessage({ Error: "Unable to retrieve all UserData" });
                                     return;
                                 }
                                 var _loop_1 = function (domain) {
                                     self.m_Cryptor.SetSaltAndIv(salt_old_1, iv_old_1);
-                                    self.m_Cryptor.Decrypt(old_pw_1, dataset2[domain]);
-                                    if (dataset2[domain].Username.length == 0 || dataset2[domain].Password.length == 0) {
+                                    self.m_Cryptor.Decrypt(old_pw_1, dataset_UserData[domain]);
+                                    if (dataset_UserData[domain].Username.length == 0 || dataset_UserData[domain].Password.length == 0) {
                                         error_msg_1 = "Error during Decryption";
                                         error_domain_1 = domain;
                                         return "break";
                                     }
                                     self.m_Cryptor.SetSaltAndIv(salt_new, iv_new);
-                                    self.m_Cryptor.Encrypt(new_pw_1, dataset2[domain]);
-                                    if (dataset2[domain].Username.length == 0 || dataset2[domain].Password.length == 0) {
+                                    self.m_Cryptor.Encrypt(new_pw_1, dataset_UserData[domain]);
+                                    if (dataset_UserData[domain].Username.length == 0 || dataset_UserData[domain].Password.length == 0) {
                                         error_msg_1 = "Error during Encryption";
                                         error_domain_1 = domain;
                                         return "break";
                                     }
-                                    self.m_Model.SaveUserData(domain, dataset2[domain].Username, dataset2[domain].Password, dataset2[domain].LastChanged, function (wasSuccessful) {
+                                    self.m_Model.SaveUserData(domain, dataset_UserData[domain].Username, dataset_UserData[domain].Password, dataset_UserData[domain].LastChanged, function (wasSuccessful) {
                                         if (!wasSuccessful) {
                                             error_msg_1 = "Error during SaveUserData";
                                             error_domain_1 = domain;
@@ -113,7 +108,7 @@ var ServerMessenger = (function () {
                                     if (error_msg_1.length != 0)
                                         return "break";
                                 };
-                                for (var domain in dataset2) {
+                                for (var domain in dataset_UserData) {
                                     var state_1 = _loop_1(domain);
                                     if (state_1 === "break")
                                         break;
@@ -123,9 +118,10 @@ var ServerMessenger = (function () {
                                     self.m_Port["options"].postMessage({ Success: "Changed Master-Password" });
                                 }
                                 else {
-                                    self.RevertToOldState(dataset2, error_domain_1, old_pw_1, new_pw_1, salt_old_1, iv_old_1, salt_new, iv_new);
+                                    self.RevertToOldState(dataset_UserData, error_domain_1, old_pw_1, new_pw_1, salt_old_1, iv_old_1, salt_new, iv_new);
                                     self.m_Port["options"].postMessage({ Error: error_msg_1 });
                                 }
+                            }, function () {
                             });
                         });
                     }
@@ -169,6 +165,43 @@ var ServerMessenger = (function () {
                         self.m_Port["options"].postMessage({ Error: "Could not decrypt updated Userdata" });
                 });
             }
+            else if (msg.CreateBackup) {
+                self.m_Model.GetAllUserData(function (dataset_UserData) {
+                    self.m_Model.GetMainData(function (dataset_MainData) {
+                        self.m_Model.GetGeneralSettings(function (dataset_GeneralSettings) {
+                            var dataset = Object.assign({}, dataset_UserData, dataset_MainData, dataset_GeneralSettings);
+                            self.CreateBackup(JSON.stringify(dataset), function (err_msg) {
+                                self.m_Port["options"].postMessage({ Error: err_msg });
+                            });
+                        }, function () {
+                            self.m_Port["options"].postMessage({ Error: "Unable to retrieve GeneralSettings" });
+                            return;
+                        });
+                    }, function () {
+                        self.m_Port["options"].postMessage({ Error: "Unable to retrieve MainData" });
+                        return;
+                    });
+                }, function () {
+                    self.m_Port["options"].postMessage({ Error: "Unable to retrieve all UserData" });
+                    return;
+                });
+            }
+            else if (msg.LoadBackup) {
+                try {
+                    var dataset = JSON.parse(msg.LoadBackup);
+                    for (var obj in dataset) {
+                        if (obj == "MainData")
+                            self.m_Model.SaveMainData(dataset[obj].Hash, dataset[obj].Salt, dataset[obj].Iv);
+                        else if (obj == "GeneralSettings")
+                            self.m_Model.SaveGeneralSettings(dataset[obj].Frequency);
+                        else
+                            self.m_Model.SaveUserData(dataset[obj].Domain, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function () { });
+                    }
+                }
+                catch (e) {
+                    self.m_Port["options"].postMessage({ Error: e });
+                }
+            }
         });
     };
     ServerMessenger.prototype.InitFillerListener = function (port) {
@@ -203,25 +236,23 @@ var ServerMessenger = (function () {
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {
-                    if (!isSetup) {
-                        self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
-                        self.m_Model.SaveGeneralSettings();
-                    }
+                }, function () {
+                    self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
+                    self.m_Model.SaveGeneralSettings();
                 });
             }
             else if (msg.MasterPassword) {
                 self.Authenticate(msg.MasterPassword, function (isAuthenticated) {
                     if (isAuthenticated)
-                        self.m_Model.GetUserData(self.m_Domain, function (dataset) {
-                            if (!dataset) {
-                                self.m_Port["popup"].postMessage({ Error: "Could not retrieve UserData" });
-                                return;
-                            }
-                            self.m_Cryptor.Decrypt(msg.MasterPassword, dataset);
-                            if (dataset.Username.length === 0 || dataset.Password.length === 0)
+                        self.m_Model.GetUserData(self.m_Domain, function (dataset_UserData) {
+                            self.m_Cryptor.Decrypt(msg.MasterPassword, dataset_UserData);
+                            if (dataset_UserData.Username.length === 0 || dataset_UserData.Password.length === 0)
                                 self.m_Port["popup"].postMessage({ Error: "Could not decrypt data." });
                             else
-                                self.m_Port["filler"].postMessage({ Userdata: dataset });
+                                self.m_Port["filler"].postMessage({ Userdata: dataset_UserData });
+                        }, function () {
+                            self.m_Port["popup"].postMessage({ Error: "Could not retrieve UserData" });
+                            return;
                         });
                     else
                         self.m_Port["popup"].postMessage({ Error: "Wrong Master Password" });
@@ -240,15 +271,13 @@ var ServerMessenger = (function () {
             else {
                 callback(false, dataset);
             }
+        }, function () {
+            console.log("Error while trying to retrieve MainData");
         });
     };
     ServerMessenger.prototype.GetDecryptedUserData = function (Master_Password, callback) {
         var self = this;
         this.m_Model.GetAllUserData(function (dataset) {
-            if (!dataset) {
-                callback(null);
-                return;
-            }
             for (var obj in dataset) {
                 self.m_Cryptor.Decrypt(Master_Password, dataset[obj]);
                 if (dataset[obj].Username.length == 0 || dataset[obj].Password.length == 0) {
@@ -257,6 +286,9 @@ var ServerMessenger = (function () {
                 }
             }
             callback(dataset);
+        }, function () {
+            callback(null);
+            return;
         });
     };
     ServerMessenger.prototype.RevertToOldState = function (dataset, domain, old_pw, new_pw, salt_old, iv_old, salt_new, iv_new) {
@@ -269,6 +301,32 @@ var ServerMessenger = (function () {
             this.m_Cryptor.Encrypt(old_pw, dataset[obj]);
             this.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function (wasSuccessful) { });
         }
+    };
+    ServerMessenger.prototype.CreateBackup = function (data, callback) {
+        var self = this;
+        window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+        window.requestFileSystem(window.TEMPORARY, 1024 * 1024, function (fs) {
+            fs.root.getFile('backup.txt', { create: true }, function (fileEntry) {
+                fileEntry.createWriter(function (fileWriter) {
+                    fileWriter.onwriteend = function (e) {
+                        chrome.downloads.download({
+                            url: fileEntry.toURL()
+                        });
+                    };
+                    fileWriter.onerror = function (e) {
+                        callback(e.toString());
+                    };
+                    var blob = new Blob([data], { type: 'text/plain' });
+                    fileWriter.write(blob);
+                }, function (e) {
+                    callback(e.toString());
+                });
+            }, function (e) {
+                callback(e.toString());
+            });
+        }, function (e) {
+            callback(e.toString());
+        });
     };
     return ServerMessenger;
 }());

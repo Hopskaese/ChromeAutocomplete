@@ -16,7 +16,7 @@
 			<ul class="nav navbar-nav">
 				<li><a href="#" id="change-masterpassword-link">Change Masterpassword</a></li>
 				<li><a href="#" id="general-settings-link">General Settings</a></li>
-				<li><a href="#" id="download-backup-link">Download backup file</a></li>
+				<li><a href="#" id="load-backup-link">Load backup file</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li><a id="auth-status">Authenticated: 
@@ -104,12 +104,36 @@
 		</article>
 	</section>
 	<section class="container" id="backup">
-		<h3 class="mid-header"><u>Your Backup</u></h3>
-		<p id="backup-text" style="color:red">
-			Here you can download a copy of the chrome local storage used by this Extension. The data is still encrypted and 
-			can only be decrypted by the Master-Password you had when you downloaded the file. Keep the file in a save place
-			so that you can restore your data if you lost it.
-		</p>
+		<h3 class="mid-header"><u>Backups</u></h3>
+		<div class="panel panel-primary" style="margin-top:2%">
+			<div class="panel-heading">
+				<h3 class="panel-title">Create Backup-file</h3>
+			</div>
+			<div class="panel-body">
+				Here you can create a copy of the chrome local storage used by this Extension. The data is still encrypted and 
+				can only be decrypted by the <b>Master-Password you had when you downloaded the file</b>. Keep the file in a save place
+				so that you can restore your data if you lost it.
+			</div>
+			<div class="panel-footer clearfix">
+				<div class="pull-right">
+					<input class="btn btn-primary" value="Create" id="btn-download-backup">
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-primary" style="margin-top:8%">
+			<div class="panel-heading">
+				<h3 class="panel-title">Load Backup-file</h3>
+			</div>
+			<div class="panel-body">
+				Here you can load a Backup-file. Once you loaded the file <b>all</b> existing data in the local storage regarding this extension will be overwritten by the data of the Backup-file. 
+			</div>
+			<div class="panel-footer clearfix">
+				<div class="pull-right">
+					<input type="file" id="backup-input" style="float: left"> 
+					<input class="btn btn-primary" value="Load" id="btn-upload-backup" style="float: right">
+				</div>
+			</div>
+		</div>
 	</section>
 	<section class="container" id="data-table">
 		<h3 class="mid-header"><u>Your Data</u></h3>
