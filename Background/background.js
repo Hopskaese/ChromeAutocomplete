@@ -99,11 +99,10 @@ var ServerMessenger = (function () {
                                         error_domain_1 = domain;
                                         return "break";
                                     }
-                                    self.m_Model.SaveUserData(domain, dataset_UserData[domain].Username, dataset_UserData[domain].Password, dataset_UserData[domain].LastChanged, function (wasSuccessful) {
-                                        if (!wasSuccessful) {
-                                            error_msg_1 = "Error during SaveUserData";
-                                            error_domain_1 = domain;
-                                        }
+                                    self.m_Model.SaveUserData(domain, dataset_UserData[domain].Username, dataset_UserData[domain].Password, dataset_UserData[domain].LastChanged, function () {
+                                    }, function () {
+                                        error_msg_1 = "Error during SaveUserData";
+                                        error_domain_1 = domain;
                                     });
                                     if (error_msg_1.length != 0)
                                         return "break";
@@ -114,8 +113,11 @@ var ServerMessenger = (function () {
                                         break;
                                 }
                                 if (error_msg_1.length == 0) {
-                                    self.m_Model.SaveMainData(hashed_pw, salt_new, iv_new);
-                                    self.m_Port["options"].postMessage({ Success: "Changed Master-Password" });
+                                    self.m_Model.SaveMainData(hashed_pw, salt_new, iv_new, function () {
+                                        self.m_Port["options"].postMessage({ Success: "Changed Master-Password" });
+                                    }, function () {
+                                        self.m_Port["options"].postMessage({ Error: "Could not save MainData. Everything is probably broken now." });
+                                    });
                                 }
                                 else {
                                     self.RevertToOldState(dataset_UserData, error_domain_1, old_pw_1, new_pw_1, salt_old_1, iv_old_1, salt_new, iv_new);
@@ -140,14 +142,11 @@ var ServerMessenger = (function () {
                     self.m_Port["options"].postMessage({ Error: "Could not encrypt UserData" });
                     return;
                 }
-                self.m_Model.SaveUserData(domain_1, msg.ChangeUserData.Username, msg.ChangeUserData.Password, date.getTime(), function (wasSuccessful) {
-                    if (wasSuccessful) {
-                        self.m_Port["options"].postMessage({ Success: "Data for " + domain_1 + " has been changed" });
-                        self.m_Port["options"].postMessage({ ResetInput: { val: id_1 } });
-                    }
-                    else {
-                        self.m_Port["options"].postMessage({ Error: "Could save UserData" });
-                    }
+                self.m_Model.SaveUserData(domain_1, msg.ChangeUserData.Username, msg.ChangeUserData.Password, date.getTime(), function () {
+                    self.m_Port["options"].postMessage({ Success: "Data for " + domain_1 + " has been changed" });
+                    self.m_Port["options"].postMessage({ ResetInput: { val: id_1 } });
+                }, function () {
+                    self.m_Port["options"].postMessage({ Error: "Could save UserData" });
                 });
             }
             else if (msg.GenerateRandom) {
@@ -157,7 +156,10 @@ var ServerMessenger = (function () {
                 self.m_Port["options"].postMessage({ GenerateRandom: { val: random, id: id_element, type: type_element } });
             }
             else if (msg.GeneralSettings) {
-                self.m_Model.SaveGeneralSettings(msg.GeneralSettings.Frequency);
+                self.m_Model.SaveGeneralSettings(msg.GeneralSettings.Frequency, function () { }, function () {
+                    self.m_Port["options"].postMessage({ Error: "Could not save Generalsettings" });
+                    return;
+                });
                 self.GetDecryptedUserData(msg.GeneralSettings.MasterPassword, function (dataset) {
                     if (dataset)
                         self.m_Port["options"].postMessage({ UpdatedUserData: dataset });
@@ -188,18 +190,33 @@ var ServerMessenger = (function () {
             }
             else if (msg.LoadBackup) {
                 try {
+                    var error_msg_2 = "";
                     var dataset = JSON.parse(msg.LoadBackup);
                     for (var obj in dataset) {
                         if (obj == "MainData")
-                            self.m_Model.SaveMainData(dataset[obj].Hash, dataset[obj].Salt, dataset[obj].Iv);
+                            self.m_Model.SaveMainData(dataset[obj].Hash, dataset[obj].Salt, dataset[obj].Iv, function () { }, function () {
+                                error_msg_2 = "Unable to save backup data";
+                            });
                         else if (obj == "GeneralSettings")
-                            self.m_Model.SaveGeneralSettings(dataset[obj].Frequency);
+                            self.m_Model.SaveGeneralSettings(dataset[obj].Frequency, function () { }, function () {
+                                error_msg_2 = "Unable to save backup data";
+                            });
                         else
-                            self.m_Model.SaveUserData(dataset[obj].Domain, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function () { });
+                            self.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function () { }, function () {
+                                error_msg_2 = "Unable to save backup data";
+                            });
+                    }
+                    if (error_msg_2) {
+                        self.m_Port["options"].postMessage({ Error: "Could not load Backup" });
+                        //deleting MainData so cant login and maybe see corrupted data
+                        chrome.storage.local.remove("MainData");
+                    }
+                    else {
+                        self.m_Port["options"].postMessage({ Success: "Backup loaded" });
                     }
                 }
                 catch (e) {
-                    self.m_Port["options"].postMessage({ Error: e });
+                    self.m_Port["options"].postMessage({ Error: "Corrupted JSON " + e });
                 }
             }
         });
@@ -227,18 +244,23 @@ var ServerMessenger = (function () {
                     self.m_Port["popup"].postMessage({ Error: "Could not encrypt new UserData" });
                     return;
                 }
-                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password, date.getTime(), function (wasSuccessful) {
-                    if (wasSuccessful)
-                        self.m_Port["popup"].postMessage({ Success: "Data saved" });
-                    else
-                        self.m_Port["popup"].postMessage({ Error: "Could not save Data" });
+                self.m_Model.SaveUserData(self.m_Domain, user.Username, user.Password, date.getTime(), function () {
+                    self.m_Port["popup"].postMessage({ Success: "Data saved" });
+                }, function () {
+                    self.m_Port["popup"].postMessage({ Error: "Could not save Data" });
                 });
             }
             else if (msg.MasterPasswordSetup) {
                 self.m_Model.GetMainData(function (isSetup) {
                 }, function () {
-                    self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, self.m_Model.SaveMainData);
-                    self.m_Model.SaveGeneralSettings();
+                    self.m_Cryptor.MainSetup(msg.MasterPasswordSetup, function (hashed_pw, salt, iv) {
+                        self.m_Model.SaveMainData(hashed_pw, salt, iv, function () {
+                            self.m_Port["popup"].postMessage({ Success: "Saved MasterPassword" });
+                        }, function () {
+                            self.m_Port["popup"].postMessage({ Error: "Could not save MasterPassword" });
+                        });
+                    });
+                    self.m_Model.SaveGeneralSettings(30, function () { }, function () { });
                 });
             }
             else if (msg.MasterPassword) {
@@ -292,6 +314,7 @@ var ServerMessenger = (function () {
         });
     };
     ServerMessenger.prototype.RevertToOldState = function (dataset, domain, old_pw, new_pw, salt_old, iv_old, salt_new, iv_new) {
+        var self = this;
         for (var obj in dataset) {
             if (domain == obj)
                 break;
@@ -299,7 +322,9 @@ var ServerMessenger = (function () {
             this.m_Cryptor.Decrypt(new_pw, dataset[obj]);
             this.m_Cryptor.SetSaltAndIv(salt_old, iv_old);
             this.m_Cryptor.Encrypt(old_pw, dataset[obj]);
-            this.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function (wasSuccessful) { });
+            this.m_Model.SaveUserData(obj, dataset[obj].Username, dataset[obj].Password, dataset[obj].LastChanged, function () { }, function () {
+                self.m_Port["options"].postMessage({ Error: "Everything is fucked up now" });
+            });
         }
     };
     ServerMessenger.prototype.CreateBackup = function (data, callback) {

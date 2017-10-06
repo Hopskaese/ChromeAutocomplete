@@ -6,50 +6,60 @@ class Model {
 	{
 		this.m_CurDataset = null;
 	}
-	SaveUserData(domain:string, username:string, password:string, lastchanged: number, callback:(wasSuccessful:boolean)=>any):void {
+	SaveUserData(domain:string, username:string, password:string, lastchanged: number,
+		success_callback:()=>any, error_callback:()=>any):void {
 		let credentials = {"Username": username, "Password": password, "LastChanged": lastchanged};
 		chrome.storage.local.set({[domain] : credentials}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error while trying to save UserData: " + lasterror.message);
-				callback(false);
+				error_callback();
 			}
 		});
-		callback(true);
+		success_callback();
 		console.log("Userdata has been saved");
 	}
-	SaveMainData(hash:string, salt:string, iv:string):void {
+	SaveMainData(hash:string, salt:string, iv:string,
+		success_callback:()=>any, error_callback:()=>any):void {
 		let data = {"Hash": hash, "Salt":salt, "Iv":iv};
 		chrome.storage.local.set({MainData : data}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
+			{
 				console.log("Last error" + lasterror.message);
-
+				error_callback();
+			}
+			success_callback();
 			console.log("Main data has been saved");
 		});
 	}
-	SaveGeneralSettings(frequency:number = 30)
+	SaveGeneralSettings(frequency:number = 30,
+		success_callback:()=>any, error_callback:()=>any)
 	{
 		let data = {"Frequency": frequency};
 		chrome.storage.local.set({GeneralSettings: data}, function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
+			{
 				console.log("Last error" + lasterror.message);
-
+				error_callback();
+			}
+			success_callback();
 			console.log("GeneralSettings have been saved");
 		});
 	}
-	DeleteRecord(domain:string, callback:()=>any):void {
+	DeleteRecord(domain:string,
+		success_callback:()=>any, error_callback:()=>any):void {
 		chrome.storage.local.remove([domain], function() {
 			let lasterror = chrome.runtime.lastError;
 			if (lasterror)
 			{
 				console.log("Error deleting record" + lasterror.message);
-				return;
+				error_callback();
 			}
 			console.log("key has been deleted");
-			callback();
+			success_callback();
 		});
 	}
 	GetAllUserData(success_callback:(MainData:object)=>any, error_callback:()=>any): void {
@@ -132,9 +142,6 @@ class Model {
 			}
 			success_callback(dataset);
 		});
-	}
-	GetCurDataset(): any {
-		return this.m_CurDataset;
 	}
 }
 
