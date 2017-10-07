@@ -1,6 +1,6 @@
 //https://jsperf.com/crypto-js-pbkdf2-sha512
 //https://stackoverflow.com/questions/20519166/cant-decrypt-string-with-cryptojs
-var Cryptor = (function () {
+var Cryptor = /** @class */ (function () {
     function Cryptor() {
         this.m_KeySize = 256;
         this.m_IvSize = 128;

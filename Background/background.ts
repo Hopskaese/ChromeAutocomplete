@@ -271,7 +271,16 @@ class ServerMessenger {
 					
 				} catch (e) {
 					self.m_Port["options"].postMessage({Error : "Corrupted JSON " + e});
-				}
+				
+							}
+			}
+			else if (msg.DeleteRecord)
+			{
+				self.m_Model.DeleteRecord(msg.DeleteRecord, function() {
+					self.m_Port["options"].postMessage({Success: "Record deleted"});
+				}, function() {
+					self.m_Port["options"].postMessage({Error : "Could not delete record"});
+				});
 			}
 		});
 	}

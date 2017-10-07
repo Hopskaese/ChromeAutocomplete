@@ -1,6 +1,6 @@
 //chrome.storage.local.get(null, function (data) { console.info(data) });
 /// <reference path="../Include/index.d.ts"/>
-var Model = (function () {
+var Model = /** @class */ (function () {
     function Model() {
         this.m_CurDataset = null;
     }

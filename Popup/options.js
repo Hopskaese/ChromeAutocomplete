@@ -9,7 +9,7 @@ var States;
     States[States["ST_MAINPAGE"] = 4] = "ST_MAINPAGE";
     States[States["ST_BACKUP"] = 5] = "ST_BACKUP";
 })(States || (States = {}));
-var OptionsMessenger = (function () {
+var OptionsMessenger = /** @class */ (function () {
     function OptionsMessenger(manager) {
         this.m_Manager = manager;
         this.InitListeners();
@@ -56,7 +56,7 @@ var OptionsMessenger = (function () {
     };
     return OptionsMessenger;
 }());
-var OptionsManager = (function () {
+var OptionsManager = /** @class */ (function () {
     function OptionsManager() {
         this.m_Messenger = new OptionsMessenger(this);
         this.InitListeners();
@@ -146,6 +146,18 @@ var OptionsManager = (function () {
                         self.SetError(e.toString());
                     };
                     fileReader.readAsText(file);
+                }
+            });
+            $('#data-table').on("click", '[id^=delete]', function () {
+                var result = confirm("Are you sure?");
+                if (result) {
+                    var id = $(this).attr("id");
+                    id = id.substr("delete".length, id.length);
+                    var domain = $('#td-domain' + id).text();
+                    if (domain)
+                        self.m_Messenger.PostMessage({ DeleteRecord: domain });
+                    else
+                        self.SetError("Unable to retrieve td value for domain");
                 }
             });
             $('#data-table').on("click", '[id^=change]', function () {
@@ -286,6 +298,7 @@ var OptionsManager = (function () {
                      <td id="td-password' + cnt + '">' + dataset[obj].Password + '</td>\
                      <td id="td-button' + cnt + '"><button type="button" class="btn btn-sm btn-primary" id="change' + cnt + '">Change</button></td>\
                      <td id="td-deadline' + cnt + '">' + time_string + '</td>\
+                     <td id="td-delete' + cnt + '"><button type="button" class="btn btn-sm btn-danger" id="delete' + cnt + '">Delete</button></td>\
                      </tr>');
             if (time_left < 0)
                 $('#td-deadline' + cnt).css("color", "#ff0000");

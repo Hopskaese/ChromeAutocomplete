@@ -177,6 +177,20 @@ class OptionsManager {
 					fileReader.readAsText(file);
 				}
 			});
+			$('#data-table').on("click",'[id^=delete]', function() {
+				let result = confirm("Are you sure?");
+
+				if (result)
+				{
+					let id:string = $(this).attr("id");
+					id = id.substr("delete".length, id.length);
+					let domain = $('#td-domain'+id).text();
+					if (domain)
+						self.m_Messenger.PostMessage({DeleteRecord : domain});
+					else
+						self.SetError("Unable to retrieve td value for domain");
+				}
+			});
 			$('#data-table').on("click",'[id^=change]', function() {
 				let id:string = $(this).attr("id");
 				id = id.substr("change".length, id.length);
@@ -331,6 +345,7 @@ class OptionsManager {
                      <td id="td-password'+cnt+'">'+dataset[obj].Password+'</td>\
                      <td id="td-button'+cnt+'"><button type="button" class="btn btn-sm btn-primary" id="change'+cnt+'">Change</button></td>\
                      <td id="td-deadline'+cnt+'">'+time_string+'</td>\
+                     <td id="td-delete'+cnt+'"><button type="button" class="btn btn-sm btn-danger" id="delete'+cnt+'">Delete</button></td>\
                      </tr>');
 
 			if (time_left < 0)
