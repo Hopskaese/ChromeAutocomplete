@@ -284,6 +284,7 @@ class ServerMessenger {
 			}
 		});
 	}
+	
 	InitFillerListener(port:chrome.runtime.Port):void {
 		var self = this;
 		port.onMessage.addListener(function(msg:any) {
@@ -297,6 +298,7 @@ class ServerMessenger {
 			}
 		});
 	}
+
 	InitPopupListener(port:chrome.runtime.Port):void {
 		var self = this;
 		var date = new Date();
@@ -352,6 +354,7 @@ class ServerMessenger {
 			}
 		});
 	}
+
 	Authenticate(Master_Password:string, callback:(isAuthenticated:boolean, dataset:any)=>any):void {
 		let hashed_pw = this.m_Cryptor.Hash(Master_Password);
 		var self = this;
@@ -369,6 +372,7 @@ class ServerMessenger {
 			console.log("Error while trying to retrieve MainData");
 		});
 	}
+
 	GetDecryptedUserData(Master_Password:string, callback:(dataset:any)=>any):void {
 		let self = this;
 		this.m_Model.GetAllUserData(function(dataset:any) {
@@ -388,6 +392,7 @@ class ServerMessenger {
 			return;
 		});
 	}
+
 	RevertToOldState(dataset:any, domain:string, old_pw:string, new_pw:string, salt_old, iv_old, salt_new, iv_new):void {
 		let self = this;
 		for (let obj in dataset)
@@ -406,6 +411,7 @@ class ServerMessenger {
 				});
 		}
 	}
+
 	CreateBackup(data:string, callback:(error_msg:string)=>any):void {
 		let self = this;
 		(window as any).requestFileSystem = (window as any).requestFileSystem || (window as any).webkitRequestFileSystem;

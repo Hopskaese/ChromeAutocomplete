@@ -260,13 +260,17 @@ var OptionsManager = /** @class */ (function () {
     };
     OptionsManager.prototype.SetError = function (error) {
         $('#error-message').text(error);
-        $('#error-messages').show();
-        $('#error-messages').fadeOut(3000);
+        $('#error-messages').css("visibility", "visible").fadeTo(0, 100);
+        $('#error-messages').fadeTo(3000, 0, function () {
+            $('#error-messages').css("visibility", "hidden");
+        });
     };
     OptionsManager.prototype.SetSuccess = function (success) {
         $('#success-message').text(success);
-        $('#success-messages').show();
-        $('#success-messages').fadeOut(3000);
+        $('#success-messages').css("visibility", "visible").fadeTo(0, 100);
+        $('#success-messages').fadeTo(3000, 0, function () {
+            $('#success-messages').css("visibility", "hidden");
+        });
     };
     OptionsManager.prototype.SetPageToState = function (state) {
         if (this.m_State == state)

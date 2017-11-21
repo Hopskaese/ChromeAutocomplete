@@ -292,8 +292,8 @@ class OptionsManager {
 		this.m_State = state;
 	}
 	SetupAuthenticated():void {
-		$('#locked').hide();
 		$('#unlocked').show();
+		$('#locked').hide();
 		$('#auth-no').hide();
 		$('#auth-yes').show();
 		this.SetPageToState(States.ST_MAINPAGE);
@@ -301,15 +301,19 @@ class OptionsManager {
 	}
 	SetError(error:string):void {
 		$('#error-message').text(error);
-		$('#error-messages').show();
-		$('#error-messages').fadeOut(3000);
+		$('#error-messages').css("visibility","visible").fadeTo(0,100);
+		$('#error-messages').fadeTo(3000, 0, function() {
+			$('#error-messages').css("visibility", "hidden");
+		});
 	}
 	SetSuccess(success:string):void {
 		$('#success-message').text(success);
-		$('#success-messages').show();
-		$('#success-messages').fadeOut(3000);
+		$('#success-messages').css("visibility", "visible").fadeTo(0,100);
+		$('#success-messages').fadeTo(3000, 0, function() {
+			$('#success-messages').css("visibility", "hidden");
+		});
 	}
-	SetPageToState(state): void {
+	SetPageToState(state):void {
 		if (this.m_State == state)
 			return;
 

@@ -1,7 +1,13 @@
-.panel 
+html, body
 {
-	margin-top:50%;
+	height: 100%;
 }
+
+.panel
+{
+	margin-top:40%;
+}
+
 #auth-no
 {
 	color:#ff0000;
@@ -15,7 +21,23 @@
 	text-align:center;
 }
 
-#error-messages, #success-messages, #data-table, #change-masterpassword, #general-settings, #auth-yes, #unlocked, #backup
+#data-table, #change-masterpassword, #general-settings, #auth-yes, #unlocked, #backup
 {
 	display: none;
+}
+
+#error-messages, #success-messages
+{
+	position: absolute;
+	top:6%;
+	width:100%;
+	visibility: hidden;
+}
+
+.vertical-center {
+  top: 10%;
+  position: absolute;
+  width: 100%;
+  padding-left:5%;
+  padding-right:5%;
 }
